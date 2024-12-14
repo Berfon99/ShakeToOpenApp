@@ -4,20 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:padding="16dp">
 
     <!-- Status text -->
     <TextView
         android:id="@+id/status_text"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Statut : En attente de secousses..."
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/sensitivity_slider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:textAlignment="center"
+        android:padding="8dp"
+        android:background="@android:color/darker_gray"
+        android:textColor="@android:color/white"/>
 
     <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
@@ -29,7 +33,8 @@
         app:layout_constraintTop_toBottomOf="@+id/status_text"
         android:max="9"
         android:progress="4"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/sensitivity_slider_description"/>
 
     <TextView
         android:id="@+id/sensitivity_value"
@@ -38,7 +43,8 @@
         android:text="Sensibilité : Moyen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"/>
 
     <!-- SeekBar pour ajuster le temps entre deux secousses -->
     <SeekBar
@@ -50,7 +56,8 @@
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
         android:max="5000"
         android:progress="1000"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/time_slider_description"/>
 
     <TextView
         android:id="@+id/time_value"
@@ -59,7 +66,8 @@
         android:text="Délai : 1000 ms"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/time_slider"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"/>
 
     <!-- Cercle GO qui change de couleur -->
     <FrameLayout
@@ -70,7 +78,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"
-        android:background="@drawable/circle_shape">
+        android:background="@drawable/circle_shape"
+        android:contentDescription="@string/go_circle_description">
         <TextView
             android:id="@+id/go_text"
             android:layout_width="wrap_content"
@@ -84,26 +93,28 @@
     <!-- Bouton pour démarrer/arrêter la détection -->
     <Button
         android:id="@+id/toggle_detection_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Démarrer la détection"
         app:layout_constraintTop_toBottomOf="@+id/go_circle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
-        android:onClick="toggleDetection"/>
+        android:onClick="toggleDetection"
+        style="@style/Widget.AppCompat.Button.Colored"/>
 
     <!-- Bouton pour réinitialiser la détection -->
     <Button
         android:id="@+id/reset_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Réinitialiser"
         app:layout_constraintTop_toBottomOf="@+id/toggle_detection_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
-        android:onClick="resetDetection"/>
+        android:onClick="resetDetection"
+        style="@style/Widget.AppCompat.Button.Colored"/>
 
     <!-- Bouton pour fermer l'application -->
     <Button
@@ -116,5 +127,6 @@
         android:layout_marginTop="16dp"
         android:textSize="18sp"
         android:layout_height="50dp"
-        android:onClick="closeApp"/>
+        android:onClick="closeApp"
+        style="@style/Widget.AppCompat.Button.Colored"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
