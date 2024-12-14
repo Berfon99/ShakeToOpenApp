@@ -21,7 +21,8 @@
         android:textAlignment="center"
         android:padding="8dp"
         android:background="@android:color/darker_gray"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/black"/>
+
 
     <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
