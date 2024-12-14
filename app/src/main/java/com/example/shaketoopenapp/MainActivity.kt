@@ -1,5 +1,6 @@
 package com.example.shaketoopen
 
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -10,22 +11,28 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import android.widget.FrameLayout
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var shakeThreshold = 15.0f
+    private var shakeTimeWindow = 1000L // Temps entre secousses ajusté par le slider
     private var lastTime: Long = 0
-    private val shakeTimeWindow = 1000L
     private var shakeCount = 0
-    private var detectionEnabled = false  // Indicateur pour savoir si la détection est active
+    private var detectionEnabled = false
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
-    private lateinit var resetButton: Button
+    private lateinit var timeValue: TextView
+    private lateinit var timeSlider: SeekBar
+    private lateinit var goCircle: FrameLayout
+    private lateinit var goText: TextView
     private lateinit var toggleDetectionButton: Button
+    private lateinit var resetButton: Button
+    private lateinit var closeButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,24 +44,37 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         statusText = findViewById(R.id.status_text)
         sensitivityValue = findViewById(R.id.sensitivity_value)
         sensitivitySlider = findViewById(R.id.sensitivity_slider)
-        resetButton = findViewById(R.id.reset_button)
+        timeValue = findViewById(R.id.time_value)
+        timeSlider = findViewById(R.id.time_slider)
+        goCircle = findViewById(R.id.go_circle)
+        goText = findViewById(R.id.go_text)
         toggleDetectionButton = findViewById(R.id.toggle_detection_button)
+        resetButton = findViewById(R.id.reset_button)
+        closeButton = findViewById(R.id.close_button)
 
+        // Sensibilité du slider
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeThreshold = 10f + progress * 2f // Plus de niveaux de sensibilité (plus gradué)
+                shakeThreshold = 10f + progress * 2f
                 sensitivityValue.text = "Sensibilité : Niveau ${progress + 1}"
             }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        resetButton.setOnClickListener {
-            shakeCount = 0
-            statusText.text = "Statut : En attente de secousses..."
-            statusText.setBackgroundColor(resources.getColor(android.R.color.transparent))
-        }
+        // Temps entre secousses (millisecondes)
+        timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                shakeTimeWindow = (progress + 1).toLong()
+                timeValue.text = "Délai : ${shakeTimeWindow} ms"
+            }
 
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Bouton pour démarrer/arrêter la détection
         toggleDetectionButton.setOnClickListener {
             detectionEnabled = !detectionEnabled
             if (detectionEnabled) {
@@ -66,13 +86,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
+        // Bouton pour réinitialiser la détection
+        resetButton.setOnClickListener {
+            shakeCount = 0
+            statusText.text = "Statut : En attente de secousses..."
+            goCircle.setBackgroundColor(Color.RED)
+        }
+
+        // Bouton pour fermer l'application
+        closeButton.setOnClickListener {
+            finish()  // Ferme l'application
+        }
+
         accelerometer?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (!detectionEnabled) return  // Si la détection est arrêtée, on ne fait rien
+        if (!detectionEnabled) return
 
         event?.let {
             val x = it.values[0]
@@ -82,29 +114,32 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val currentTime = System.currentTimeMillis()
             val magnitude = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 
+            // Affichage de l'intensité des secousses avec couleurs
+            when {
+                magnitude > shakeThreshold * 2 -> {
+                    goCircle.setBackgroundColor(Color.GREEN) // Secousse intense
+                }
+                magnitude > shakeThreshold -> {
+                    goCircle.setBackgroundColor(Color.YELLOW) // Secousse modérée
+                }
+                else -> {
+                    goCircle.setBackgroundColor(Color.RED) // Secousse faible
+                }
+            }
+
             if (magnitude > shakeThreshold) {
                 if (currentTime - lastTime < shakeTimeWindow) {
                     shakeCount++
                     if (shakeCount == 2) {
-                        // Modifier le statut en fonction de la force de la secousse
-                        statusText.text = "Secousse détectée!"
-                        changeBackgroundColor(magnitude) // Changer la couleur de fond en fonction de la force
-                        shakeCount = 0
+                        statusText.text = "Secousses détectées!"
+                        goCircle.setBackgroundColor(Color.GREEN)  // Le cercle devient vert après 2 secousses
                     }
                 } else {
                     shakeCount = 0
+                    goCircle.setBackgroundColor(Color.RED)  // Réinitialiser le cercle si trop de temps s'est écoulé
                 }
                 lastTime = currentTime
             }
-        }
-    }
-
-    private fun changeBackgroundColor(magnitude: Float) {
-        // Définir les couleurs selon la magnitude de la secousse
-        when {
-            magnitude < 20 -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_green_light))
-            magnitude in 20f..30f -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_orange_light))
-            else -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_red_light))
         }
     }
 
@@ -113,20 +148,5 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-    }
-
-    fun resetDetection() {
-        shakeCount = 0
-        statusText.text = "Statut : En attente de secousses..."
-        statusText.setBackgroundColor(resources.getColor(android.R.color.transparent))
-    }
-
-    fun toggleDetection() {
-        detectionEnabled = !detectionEnabled
-        if (detectionEnabled) {
-            statusText.text = "Détection en cours..."
-        } else {
-            statusText.text = "Détection arrêtée"
-        }
     }
 }

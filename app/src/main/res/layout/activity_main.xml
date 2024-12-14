@@ -13,13 +13,17 @@
         android:textSize="18sp"
         android:layout_marginBottom="16dp" />
 
+    <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
         android:id="@+id/sensitivity_slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:max="9"
-        android:progress="4"/>
+        android:progress="4"
+        android:tickMark="@android:drawable/btn_radio"
+        android:stepSize="1"
+        android:thumb="@android:drawable/btn_radio" />
 
     <TextView
         android:id="@+id/sensitivity_value"
@@ -28,6 +32,50 @@
         android:text="Sensibilité : Moyen"
         android:layout_marginTop="8dp" />
 
+    <!-- SeekBar pour ajuster le temps entre deux secousses -->
+    <SeekBar
+        android:id="@+id/time_slider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:max="5000"
+        android:progress="1000"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/time_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Délai : 1000 ms"
+        android:layout_marginTop="8dp" />
+
+    <!-- Cercle GO qui change de couleur -->
+    <FrameLayout
+        android:id="@+id/go_circle"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:background="@drawable/circle_shape">
+        <TextView
+            android:id="@+id/go_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GO"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+
+    <!-- Bouton pour démarrer/arrêter la détection -->
+    <Button
+        android:id="@+id/toggle_detection_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Démarrer la détection"
+        android:layout_marginTop="16dp"
+        android:onClick="toggleDetection"/>
+
+    <!-- Bouton pour réinitialiser la détection -->
     <Button
         android:id="@+id/reset_button"
         android:layout_width="wrap_content"
@@ -36,11 +84,13 @@
         android:layout_marginTop="16dp"
         android:onClick="resetDetection"/>
 
+    <!-- Bouton pour fermer l'application -->
     <Button
-        android:id="@+id/toggle_detection_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Démarrer la détection"
+        android:id="@+id/close_button"
+        android:layout_width="match_parent"
+        android:text="Fermer l'application"
         android:layout_marginTop="16dp"
-        android:onClick="toggleDetection"/>
+        android:textSize="18sp"
+        android:layout_height="50dp"
+        android:onClick="closeApp"/>
 </LinearLayout>
