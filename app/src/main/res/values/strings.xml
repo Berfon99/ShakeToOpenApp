@@ -1,11 +1,13 @@
 <resources>
     <string name="app_name">ShakeToOpen</string>
     <string name="sensitivity_slider_description">Ajustez la sensibilité de détection des secousses</string>
-    <string name="time_slider_description">Ajustez le délai entre deux secousses</string>
+    <string name="time_slider_description">Ajustez le temps minimum entre deux secousses</string>
+    <string name="time_max_slider_description">Ajustez le temps maximum pour que les deux secousses aient lieu</string>
     <string name="go_circle_description">Cercle GO qui change de couleur lorsque deux secousses sont détectées</string>
-    <string name="status_waiting">Statut : En attente de secousses</string>
+    <string name="status_waiting">Statut : En attente de secousses&#8230;</string>
     <string name="sensitivity_level">Sensibilité : Niveau %1$d</string>
-    <string name="time_delay">Délai : %1$d ms</string>
+    <string name="time_delay">Temps minimum : %.1f s</string>
+    <string name="time_max_delay">Temps maximum : %.1f s</string>
     <string name="go_text">GO</string>
     <string name="toggle_detection_button_text">Démarrer la détection</string>
     <string name="reset_button_text">Réinitialiser</string>
@@ -16,4 +18,5 @@
     <string name="detection_in_progress">Détection en cours&#8230;</string>
     <string name="detection_stopped">Détection arrêtée</string>
     <string name="sensitivity_medium">Sensibilité : Moyen</string>
+    <string name="one_shake_detected">Une secousse détectée!</string>
 </resources>

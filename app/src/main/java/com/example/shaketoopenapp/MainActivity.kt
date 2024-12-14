@@ -18,10 +18,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var shakeThreshold = 15.0f
-    private var shakeTimeWindow = 1000L // Temps entre secousses ajusté par le slider
+    private var shakeTimeWindow = 500L // Temps minimum entre secousses (par défaut 0.5 seconde)
+    private var shakeTimeMax = 2000L // Temps maximum pour que les deux secousses aient lieu (par défaut 2 secondes)
     private var lastTime: Long = 0
     private var shakeCount = 0
-    private var goCircleGreen = false  // Nouveau flag pour vérifier si GO est déjà vert
+    private var goCircleGreen = false  // Flag pour vérifier si GO est déjà vert
     private var detectionEnabled = false
 
     private lateinit var statusText: TextView
@@ -29,6 +30,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensitivitySlider: SeekBar
     private lateinit var timeValue: TextView
     private lateinit var timeSlider: SeekBar
+    private lateinit var timeMaxValue: TextView
+    private lateinit var timeMaxSlider: SeekBar
     private lateinit var goCircle: FrameLayout
     private lateinit var goText: TextView
     private lateinit var toggleDetectionButton: Button
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensitivitySlider = findViewById(R.id.sensitivity_slider)
         timeValue = findViewById(R.id.time_value)
         timeSlider = findViewById(R.id.time_slider)
+        timeMaxValue = findViewById(R.id.time_max_value)
+        timeMaxSlider = findViewById(R.id.time_max_slider)
         goCircle = findViewById(R.id.go_circle)
         goText = findViewById(R.id.go_text)
         toggleDetectionButton = findViewById(R.id.toggle_detection_button)
@@ -64,11 +69,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Temps entre secousses (millisecondes)
+        // Temps minimum entre secousses (millisecondes)
         timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeTimeWindow = (progress + 1).toLong()
-                timeValue.text = getString(R.string.time_delay, shakeTimeWindow)
+                shakeTimeWindow = (200 + progress * 20).toLong() // Convertir la progression en millisecondes
+                timeValue.text = getString(R.string.time_delay, shakeTimeWindow / 1000.0)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Temps maximum pour que les deux secousses aient lieu (millisecondes)
+        timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                shakeTimeMax = (200 + progress * 20).toLong() // Convertir la progression en millisecondes
+                timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -95,14 +111,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             if (magnitude > shakeThreshold) {
                 if (currentTime - lastTime < shakeTimeWindow) {
                     shakeCount++
-                    if (shakeCount == 2 && !goCircleGreen) {
+                    if (shakeCount == 1) {
+                        // Première secousse détectée, GO devient orange
+                        goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
+                        statusText.text = getString(R.string.one_shake_detected)
+                    } else if (shakeCount == 2 && !goCircleGreen) {
                         // Deux secousses détectées, GO devient vert et reste vert
                         goCircle.setBackgroundColor(Color.GREEN)
                         goCircleGreen = true  // On empêche de remettre GO en rouge
                         statusText.text = getString(R.string.two_shakes_detected)
                     }
                 } else {
-                    shakeCount = 0
+                    shakeCount = 1
+                    goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
+                    statusText.text = getString(R.string.one_shake_detected)
                 }
                 lastTime = currentTime
             }
@@ -117,6 +139,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     // Méthode pour démarrer/arrêter la détection
+    @SuppressWarnings("unused")
     fun toggleDetection(view: View) {
         detectionEnabled = !detectionEnabled
         if (detectionEnabled) {
@@ -129,6 +152,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     // Méthode pour réinitialiser la détection
+    @SuppressWarnings("unused")
     fun resetDetection(view: View) {
         shakeCount = 0
         goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
@@ -137,6 +161,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     // Méthode pour fermer l'application
+    @SuppressWarnings("unused")
     fun closeApp(view: View) {
         finish()  // Ferme l'application
     }

@@ -20,9 +20,8 @@
         android:layout_marginBottom="16dp"
         android:textAlignment="center"
         android:padding="8dp"
-        android:background="@android:color/darker_gray"
-        android:textColor="@android:color/black"/>
-
+        android:background="@android:color/black"
+        android:textColor="@android:color/white"/>
 
     <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
@@ -47,7 +46,7 @@
         android:layout_marginTop="8dp"
         android:textSize="16sp"/>
 
-    <!-- SeekBar pour ajuster le temps entre deux secousses -->
+    <!-- SeekBar pour ajuster le temps minimum entre deux secousses -->
     <SeekBar
         android:id="@+id/time_slider"
         android:layout_width="0dp"
@@ -55,8 +54,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
-        android:max="5000"
-        android:progress="1000"
+        android:max="90"
+        android:progress="30"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/time_slider_description"/>
 
@@ -70,12 +69,35 @@
         android:layout_marginTop="8dp"
         android:textSize="16sp"/>
 
+    <!-- SeekBar pour ajuster le temps maximum pour que les deux secousses aient lieu -->
+    <SeekBar
+        android:id="@+id/time_max_slider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_value"
+        android:max="90"
+        android:progress="90"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/time_max_slider_description"/>
+
+    <TextView
+        android:id="@+id/time_max_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/time_max_delay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_max_slider"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"/>
+
     <!-- Cercle GO qui change de couleur -->
     <FrameLayout
         android:id="@+id/go_circle"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        app:layout_constraintTop_toBottomOf="@+id/time_value"
+        app:layout_constraintTop_toBottomOf="@+id/time_max_value"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"
