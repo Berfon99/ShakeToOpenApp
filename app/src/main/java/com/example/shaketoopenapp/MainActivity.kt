@@ -19,11 +19,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lastTime: Long = 0
     private val shakeTimeWindow = 1000L
     private var shakeCount = 0
+    private var detectionEnabled = false  // Indicateur pour savoir si la détection est active
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
     private lateinit var resetButton: Button
+    private lateinit var toggleDetectionButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensitivityValue = findViewById(R.id.sensitivity_value)
         sensitivitySlider = findViewById(R.id.sensitivity_slider)
         resetButton = findViewById(R.id.reset_button)
+        toggleDetectionButton = findViewById(R.id.toggle_detection_button)
 
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -49,7 +52,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         resetButton.setOnClickListener {
             shakeCount = 0
             statusText.text = "Statut : En attente de secousses..."
-            Toast.makeText(this, "Réinitialisé", Toast.LENGTH_SHORT).show()
+            statusText.setBackgroundColor(resources.getColor(android.R.color.transparent))
+        }
+
+        toggleDetectionButton.setOnClickListener {
+            detectionEnabled = !detectionEnabled
+            if (detectionEnabled) {
+                toggleDetectionButton.text = "Arrêter la détection"
+                statusText.text = "Détection en cours..."
+            } else {
+                toggleDetectionButton.text = "Démarrer la détection"
+                statusText.text = "Détection arrêtée"
+            }
         }
 
         accelerometer?.let {
@@ -58,6 +72,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
+        if (!detectionEnabled) return  // Si la détection est arrêtée, on ne fait rien
+
         event?.let {
             val x = it.values[0]
             val y = it.values[1]
@@ -103,5 +119,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         shakeCount = 0
         statusText.text = "Statut : En attente de secousses..."
         statusText.setBackgroundColor(resources.getColor(android.R.color.transparent))
+    }
+
+    fun toggleDetection() {
+        detectionEnabled = !detectionEnabled
+        if (detectionEnabled) {
+            statusText.text = "Détection en cours..."
+        } else {
+            statusText.text = "Détection arrêtée"
+        }
     }
 }

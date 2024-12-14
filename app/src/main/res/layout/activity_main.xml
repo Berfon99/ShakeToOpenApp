@@ -19,8 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:max="9"
-        android:progress="4"/> <!-- Modification du max pour plus de sensibilité -->
-
+        android:progress="4"/>
 
     <TextView
         android:id="@+id/sensitivity_value"
@@ -37,4 +36,11 @@
         android:layout_marginTop="16dp"
         android:onClick="resetDetection"/>
 
+    <Button
+        android:id="@+id/toggle_detection_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Démarrer la détection"
+        android:layout_marginTop="16dp"
+        android:onClick="toggleDetection"/>
 </LinearLayout>
