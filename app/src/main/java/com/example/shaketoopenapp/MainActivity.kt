@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeThreshold = 10f + progress * 5f
+                shakeThreshold = 10f + progress * 2f // Plus de niveaux de sensibilité (plus gradué)
                 sensitivityValue.text = "Sensibilité : Niveau ${progress + 1}"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -65,11 +65,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             val currentTime = System.currentTimeMillis()
             val magnitude = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+
             if (magnitude > shakeThreshold) {
                 if (currentTime - lastTime < shakeTimeWindow) {
                     shakeCount++
                     if (shakeCount == 2) {
+                        // Modifier le statut en fonction de la force de la secousse
                         statusText.text = "Secousse détectée!"
+                        changeBackgroundColor(magnitude) // Changer la couleur de fond en fonction de la force
                         shakeCount = 0
                     }
                 } else {
@@ -77,6 +80,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
                 lastTime = currentTime
             }
+        }
+    }
+
+    private fun changeBackgroundColor(magnitude: Float) {
+        // Définir les couleurs selon la magnitude de la secousse
+        when {
+            magnitude < 20 -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_green_light))
+            magnitude in 20f..30f -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_orange_light))
+            else -> statusText.setBackgroundColor(resources.getColor(android.R.color.holo_red_light))
         }
     }
 
@@ -90,5 +102,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     fun resetDetection() {
         shakeCount = 0
         statusText.text = "Statut : En attente de secousses..."
+        statusText.setBackgroundColor(resources.getColor(android.R.color.transparent))
     }
 }

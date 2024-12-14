@@ -10,15 +10,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Statut : En attente de secousses..."
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp" />
 
     <SeekBar
         android:id="@+id/sensitivity_slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:max="4"
-        android:progress="2"/>
+        android:max="9"
+        android:progress="4"/> <!-- Modification du max pour plus de sensibilité -->
+
 
     <TextView
         android:id="@+id/sensitivity_value"
@@ -34,4 +36,5 @@
         android:text="Réinitialiser"
         android:layout_marginTop="16dp"
         android:onClick="resetDetection"/>
+
 </LinearLayout>
