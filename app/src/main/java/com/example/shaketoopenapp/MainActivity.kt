@@ -72,8 +72,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Temps minimum entre secousses (millisecondes)
         timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeTimeWindow = (200 + progress * 20).toLong() // Convertir la progression en millisecondes
+                shakeTimeWindow = (200 + progress * 50).toLong() // Convertir la progression en millisecondes
                 timeValue.text = getString(R.string.time_delay, shakeTimeWindow / 1000.0)
+                if (shakeTimeWindow > shakeTimeMax) {
+                    shakeTimeWindow = shakeTimeMax
+                    timeSlider.progress = ((shakeTimeMax - 200) / 50).toInt()
+                    timeValue.text = getString(R.string.time_delay, shakeTimeWindow / 1000.0)
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -83,8 +88,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Temps maximum pour que les deux secousses aient lieu (millisecondes)
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeTimeMax = (200 + progress * 20).toLong() // Convertir la progression en millisecondes
+                shakeTimeMax = (500 + progress * 50).toLong() // Convertir la progression en millisecondes
                 timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
+                if (shakeTimeMax < shakeTimeWindow) {
+                    shakeTimeMax = shakeTimeWindow
+                    timeMaxSlider.progress = ((shakeTimeMax - 500) / 50).toInt()
+                    timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -115,7 +125,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         // Première secousse détectée, GO devient orange
                         goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
                         statusText.text = getString(R.string.one_shake_detected)
-                    } else if (shakeCount == 2 && !goCircleGreen) {
+                    } else if (shakeCount == 2 && !goCircleGreen && currentTime - lastTime < shakeTimeMax) {
                         // Deux secousses détectées, GO devient vert et reste vert
                         goCircle.setBackgroundColor(Color.GREEN)
                         goCircleGreen = true  // On empêche de remettre GO en rouge

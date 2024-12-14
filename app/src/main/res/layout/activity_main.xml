@@ -54,8 +54,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
-        android:max="90"
-        android:progress="30"
+        android:max="7"
+        android:progress="5"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/time_slider_description"/>
 
@@ -77,8 +77,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/time_value"
-        android:max="90"
-        android:progress="90"
+        android:max="5"
+        android:progress="4"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/time_max_slider_description"/>
 
