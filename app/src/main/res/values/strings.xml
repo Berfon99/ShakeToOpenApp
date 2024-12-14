@@ -3,12 +3,17 @@
     <string name="sensitivity_slider_description">Ajustez la sensibilité de détection des secousses</string>
     <string name="time_slider_description">Ajustez le délai entre deux secousses</string>
     <string name="go_circle_description">Cercle GO qui change de couleur lorsque deux secousses sont détectées</string>
-    <string name="status_waiting">Statut : En attente de secousses ___</string>
-    <string name="sensitivity_medium">Sensibilité : Moyen</string>
-    <string name="time_delay">Délai : 1000 ms</string>
+    <string name="status_waiting">Statut : En attente de secousses</string>
+    <string name="sensitivity_level">Sensibilité : Niveau %1$d</string>
+    <string name="time_delay">Délai : %1$d ms</string>
     <string name="go_text">GO</string>
     <string name="toggle_detection_button_text">Démarrer la détection</string>
     <string name="reset_button_text">Réinitialiser</string>
     <string name="close_button_text">Fermer application</string>
+    <string name="two_shakes_detected">Deux secousses détectées!</string>
+    <string name="stop_detection">Arrêter la détection</string>
+    <string name="start_detection">Démarrer la détection</string>
+    <string name="detection_in_progress">Détection en cours&#8230;</string>
+    <string name="detection_stopped">Détection arrêtée</string>
+    <string name="sensitivity_medium">Sensibilité : Moyen</string>
 </resources>
-

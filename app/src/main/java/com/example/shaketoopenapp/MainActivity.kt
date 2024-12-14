@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 shakeThreshold = 15f + progress * 2f  // Ajustement de la sensibilité
-                sensitivityValue.text = "Sensibilité : Niveau ${progress + 1}"
+                sensitivityValue.text = getString(R.string.sensitivity_level, progress + 1)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 shakeTimeWindow = (progress + 1).toLong()
-                timeValue.text = "Délai : ${shakeTimeWindow} ms"
+                timeValue.text = getString(R.string.time_delay, shakeTimeWindow)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         // Deux secousses détectées, GO devient vert et reste vert
                         goCircle.setBackgroundColor(Color.GREEN)
                         goCircleGreen = true  // On empêche de remettre GO en rouge
-                        statusText.text = "Deux secousses détectées!"
+                        statusText.text = getString(R.string.two_shakes_detected)
                     }
                 } else {
                     shakeCount = 0
@@ -120,11 +120,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     fun toggleDetection(view: View) {
         detectionEnabled = !detectionEnabled
         if (detectionEnabled) {
-            toggleDetectionButton.text = "Arrêter la détection"
-            statusText.text = "Détection en cours..."
+            toggleDetectionButton.text = getString(R.string.stop_detection)
+            statusText.text = getString(R.string.detection_in_progress)
         } else {
-            toggleDetectionButton.text = "Démarrer la détection"
-            statusText.text = "Détection arrêtée"
+            toggleDetectionButton.text = getString(R.string.start_detection)
+            statusText.text = getString(R.string.detection_stopped)
         }
     }
 
@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         shakeCount = 0
         goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
         goCircleGreen = false  // Réinitialiser l'état du GO
-        statusText.text = "Statut : En attente de secousses..."
+        statusText.text = getString(R.string.status_waiting)
     }
 
     // Méthode pour fermer l'application
