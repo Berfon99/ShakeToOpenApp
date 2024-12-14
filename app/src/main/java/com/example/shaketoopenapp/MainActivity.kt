@@ -6,6 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.SeekBar
@@ -74,31 +75,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Bouton pour démarrer/arrêter la détection
-        toggleDetectionButton.setOnClickListener {
-            detectionEnabled = !detectionEnabled
-            if (detectionEnabled) {
-                toggleDetectionButton.text = "Arrêter la détection"
-                statusText.text = "Détection en cours..."
-            } else {
-                toggleDetectionButton.text = "Démarrer la détection"
-                statusText.text = "Détection arrêtée"
-            }
-        }
-
-        // Bouton pour réinitialiser la détection
-        resetButton.setOnClickListener {
-            shakeCount = 0
-            goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
-            goCircleGreen = false  // Réinitialiser l'état du GO
-            statusText.text = "Statut : En attente de secousses..."
-        }
-
-        // Bouton pour fermer l'application
-        closeButton.setOnClickListener {
-            finish()  // Ferme l'application
-        }
-
         accelerometer?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
@@ -138,5 +114,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+    }
+
+    // Méthode pour démarrer/arrêter la détection
+    fun toggleDetection(view: View) {
+        detectionEnabled = !detectionEnabled
+        if (detectionEnabled) {
+            toggleDetectionButton.text = "Arrêter la détection"
+            statusText.text = "Détection en cours..."
+        } else {
+            toggleDetectionButton.text = "Démarrer la détection"
+            statusText.text = "Détection arrêtée"
+        }
+    }
+
+    // Méthode pour réinitialiser la détection
+    fun resetDetection(view: View) {
+        shakeCount = 0
+        goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
+        goCircleGreen = false  // Réinitialiser l'état du GO
+        statusText.text = "Statut : En attente de secousses..."
+    }
+
+    // Méthode pour fermer l'application
+    fun closeApp(view: View) {
+        finish()  // Ferme l'application
     }
 }
