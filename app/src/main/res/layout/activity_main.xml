@@ -1,60 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    tools:context=".MainActivity">
 
+    <!-- Status text -->
     <TextView
         android:id="@+id/status_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Statut : En attente de secousses..."
         android:textSize="18sp"
-        android:layout_marginBottom="16dp" />
+        app:layout_constraintBottom_toTopOf="@+id/sensitivity_slider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="16dp"/>
 
     <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
         android:id="@+id/sensitivity_slider"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_text"
         android:max="9"
         android:progress="4"
-        android:tickMark="@android:drawable/btn_radio"
-        android:stepSize="1"
-        android:thumb="@android:drawable/btn_radio" />
+        android:layout_marginTop="16dp"/>
 
     <TextView
         android:id="@+id/sensitivity_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sensibilité : Moyen"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider"
+        android:layout_marginTop="8dp"/>
 
     <!-- SeekBar pour ajuster le temps entre deux secousses -->
     <SeekBar
         android:id="@+id/time_slider"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
         android:max="5000"
         android:progress="1000"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginTop="16dp"/>
 
     <TextView
         android:id="@+id/time_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Délai : 1000 ms"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_slider"
+        android:layout_marginTop="8dp"/>
 
     <!-- Cercle GO qui change de couleur -->
     <FrameLayout
         android:id="@+id/go_circle"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:layout_gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/time_value"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"
         android:background="@drawable/circle_shape">
         <TextView
             android:id="@+id/go_text"
@@ -72,6 +87,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Démarrer la détection"
+        app:layout_constraintTop_toBottomOf="@+id/go_circle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:onClick="toggleDetection"/>
 
@@ -81,16 +99,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Réinitialiser"
+        app:layout_constraintTop_toBottomOf="@+id/toggle_detection_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:onClick="resetDetection"/>
 
     <!-- Bouton pour fermer l'application -->
     <Button
         android:id="@+id/close_button"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:text="Fermer l'application"
+        app:layout_constraintTop_toBottomOf="@+id/reset_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:textSize="18sp"
         android:layout_height="50dp"
         android:onClick="closeApp"/>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

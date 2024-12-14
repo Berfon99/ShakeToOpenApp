@@ -7,11 +7,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.FrameLayout
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -21,6 +20,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var shakeTimeWindow = 1000L // Temps entre secousses ajusté par le slider
     private var lastTime: Long = 0
     private var shakeCount = 0
+    private var goCircleGreen = false  // Nouveau flag pour vérifier si GO est déjà vert
     private var detectionEnabled = false
 
     private lateinit var statusText: TextView
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Sensibilité du slider
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeThreshold = 10f + progress * 2f
+                shakeThreshold = 15f + progress * 2f  // Ajustement de la sensibilité
                 sensitivityValue.text = "Sensibilité : Niveau ${progress + 1}"
             }
 
@@ -89,8 +89,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Bouton pour réinitialiser la détection
         resetButton.setOnClickListener {
             shakeCount = 0
+            goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
+            goCircleGreen = false  // Réinitialiser l'état du GO
             statusText.text = "Statut : En attente de secousses..."
-            goCircle.setBackgroundColor(Color.RED)
         }
 
         // Bouton pour fermer l'application
@@ -114,29 +115,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val currentTime = System.currentTimeMillis()
             val magnitude = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 
-            // Affichage de l'intensité des secousses avec couleurs
-            when {
-                magnitude > shakeThreshold * 2 -> {
-                    goCircle.setBackgroundColor(Color.GREEN) // Secousse intense
-                }
-                magnitude > shakeThreshold -> {
-                    goCircle.setBackgroundColor(Color.YELLOW) // Secousse modérée
-                }
-                else -> {
-                    goCircle.setBackgroundColor(Color.RED) // Secousse faible
-                }
-            }
-
+            // Affichage de l'intensité des secousses
             if (magnitude > shakeThreshold) {
                 if (currentTime - lastTime < shakeTimeWindow) {
                     shakeCount++
-                    if (shakeCount == 2) {
-                        statusText.text = "Secousses détectées!"
-                        goCircle.setBackgroundColor(Color.GREEN)  // Le cercle devient vert après 2 secousses
+                    if (shakeCount == 2 && !goCircleGreen) {
+                        // Deux secousses détectées, GO devient vert et reste vert
+                        goCircle.setBackgroundColor(Color.GREEN)
+                        goCircleGreen = true  // On empêche de remettre GO en rouge
+                        statusText.text = "Deux secousses détectées!"
                     }
                 } else {
                     shakeCount = 0
-                    goCircle.setBackgroundColor(Color.RED)  // Réinitialiser le cercle si trop de temps s'est écoulé
                 }
                 lastTime = currentTime
             }
