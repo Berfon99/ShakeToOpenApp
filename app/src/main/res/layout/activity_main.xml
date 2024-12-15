@@ -54,7 +54,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
-        android:max="7"
+        android:max="8"
         android:progress="5"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/time_slider_description"/>

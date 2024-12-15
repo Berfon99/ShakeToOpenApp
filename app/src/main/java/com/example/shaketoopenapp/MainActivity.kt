@@ -58,6 +58,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         resetButton = findViewById(R.id.reset_button)
         closeButton = findViewById(R.id.close_button)
 
+        // Initialiser les valeurs par défaut
+        timeValue.text = getString(R.string.time_delay, shakeTimeWindow / 1000.0)
+        timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
+
         // Sensibilité du slider
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -88,11 +92,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Temps maximum pour que les deux secousses aient lieu (millisecondes)
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeTimeMax = (500 + progress * 50).toLong() // Convertir la progression en millisecondes
+                shakeTimeMax = (500 + progress * 500).toLong() // Convertir la progression en millisecondes
                 timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
                 if (shakeTimeMax < shakeTimeWindow) {
                     shakeTimeMax = shakeTimeWindow
-                    timeMaxSlider.progress = ((shakeTimeMax - 500) / 50).toInt()
+                    timeMaxSlider.progress = ((shakeTimeMax - 500) / 500).toInt()
                     timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
                 }
             }
