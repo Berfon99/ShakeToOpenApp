@@ -26,38 +26,39 @@
     <!-- SeekBar pour ajuster la sensibilité -->
     <SeekBar
         android:id="@+id/sensitivity_slider"
-        android:layout_width="0dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/status_text"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/sensitivity_slider_description"
         android:max="9"
         android:progress="4"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/sensitivity_slider_description"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_text" />
 
     <TextView
         android:id="@+id/sensitivity_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/sensitivity_medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:textSize="16sp"/>
+        android:text="@string/sensitivity_medium"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider" />
 
     <!-- SeekBar pour ajuster le temps minimum entre deux secousses -->
     <SeekBar
         android:id="@+id/time_slider"
-        android:layout_width="0dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sensitivity_value"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/time_slider_description"
         android:max="8"
         android:progress="5"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/time_slider_description"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sensitivity_value" />
 
     <TextView
         android:id="@+id/time_value"
@@ -72,15 +73,15 @@
     <!-- SeekBar pour ajuster le temps maximum pour que les deux secousses aient lieu -->
     <SeekBar
         android:id="@+id/time_max_slider"
-        android:layout_width="0dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_value"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/time_max_slider_description"
         android:max="5"
         android:progress="4"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/time_max_slider_description"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_value" />
 
     <TextView
         android:id="@+id/time_max_value"
@@ -95,22 +96,23 @@
     <!-- Cercle GO qui change de couleur -->
     <FrameLayout
         android:id="@+id/go_circle"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        app:layout_constraintTop_toBottomOf="@+id/time_max_value"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginTop="32dp"
         android:background="@drawable/circle_shape"
-        android:contentDescription="@string/go_circle_description">
+        android:contentDescription="@string/go_circle_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_max_value">
+
         <TextView
             android:id="@+id/go_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:text="@string/go_text"
-            android:textSize="24sp"
             android:textColor="@android:color/white"
-            android:layout_gravity="center"/>
+            android:textSize="24sp" />
     </FrameLayout>
 
     <!-- Bouton pour lancer XCTrack -->

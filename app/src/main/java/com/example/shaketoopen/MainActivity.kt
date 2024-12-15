@@ -1,6 +1,7 @@
 package com.example.shaketoopen
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -15,7 +16,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.sqrt
-
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -69,10 +69,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
 
         // Sensibilité du slider
+        sensitivitySlider.max = 4 // Set the maximum value to 4 for 5 levels
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 // Ajustement de la sensibilité de manière inversement proportionnelle
-                shakeThreshold = 20f - (progress * 2f)  // Plus la progression est élevée, plus le seuil est bas
+                // New mapping: progress 0 -> threshold 30, progress 4 -> threshold 15
+                shakeThreshold = 30f - (progress * 3.75f)  // Adjust the multiplier to spread out the threshold values
                 sensitivityValue.text = getString(R.string.sensitivity_level, progress + 1)
             }
 
@@ -192,7 +194,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             lastTime = currentTime
         }
     }
-
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
