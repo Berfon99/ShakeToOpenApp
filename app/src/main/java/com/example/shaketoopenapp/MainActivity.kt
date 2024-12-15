@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var goCircleGreen = false  // Flag pour vérifier si GO est déjà vert
     private var detectionEnabled = true  // Activer la détection de secousses dès le lancement
     private var shakeToXCTrackEnabled = false  // Flag pour vérifier si le mode "Secousses to XCTrack" est activé
+    private var firstShakeTime: Long = 0 // Temps de la première secousse
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
@@ -70,7 +71,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Sensibilité du slider
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                shakeThreshold = 15f + progress * 2f  // Ajustement de la sensibilité
+                // Ajustement de la sensibilité de manière inversement proportionnelle
+                shakeThreshold = 20f - (progress * 2f)  // Plus la progression est élevée, plus le seuil est bas
                 sensitivityValue.text = getString(R.string.sensitivity_level, progress + 1)
             }
 
@@ -129,36 +131,32 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val currentTime = System.currentTimeMillis()
             val magnitude = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 
-            // Affichage de l'intensité des secousses
+            // Vérification de l'intensité de la secousse
             if (magnitude > shakeThreshold) {
-                if (currentTime - lastTime < shakeTimeWindow) {
-                    shakeCount++
-                    if (shakeCount == 1) {
-                        // Première secousse détectée, GO devient orange
-                        goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
-                        statusText.text = getString(R.string.one_shake_detected)
-                    } else if (shakeCount == 2 && !goCircleGreen && currentTime - lastTime < shakeTimeMax) {
-                        // Deux secousses détectées, GO devient vert et reste vert
-                        goCircle.setBackgroundColor(Color.GREEN)
-                        goCircleGreen = true  // On empêche de remettre GO en rouge
-                        statusText.text = getString(R.string.two_shakes_detected)
-                        if (shakeToXCTrackEnabled) {
-                            launchXCTrack(null)  // Lancer XCTrack si le mode "Secousses to XCTrack" est activé
-                        }
-                    }
-                } else {
+                if (shakeCount == 0) {
+                    // Première secousse détectée, GO devient orange
                     shakeCount = 1
                     goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
                     statusText.text = getString(R.string.one_shake_detected)
+                    firstShakeTime = currentTime // Enregistrer le temps de la première secousse
+                } else if (shakeCount == 1 && currentTime - firstShakeTime > shakeTimeWindow && currentTime - firstShakeTime < shakeTimeMax) {
+                    // Deux secousses détectées, GO devient vert et reste vert
+                    shakeCount = 2
+                    goCircle.setBackgroundColor(Color.GREEN)
+                    goCircleGreen = true  // On empêche de remettre GO en rouge
+                    statusText.text = getString(R.string.two_shakes_detected)
+                    if (shakeToXCTrackEnabled) {
+                        launchXCTrack(null)  // Lancer XCTrack si le mode "Secousses to XCTrack" est activé
+                    }
                 }
-                lastTime = currentTime
-            } else if (currentTime - lastTime > shakeTimeMax) {
+            } else if (currentTime - firstShakeTime > shakeTimeMax) {
                 // Réinitialiser le compteur de secousses si la seconde secousse n'arrive pas dans le délai maximum
                 shakeCount = 0
                 goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
                 goCircleGreen = false  // Réinitialiser l'état du GO
                 statusText.text = getString(R.string.status_waiting)
             }
+            lastTime = currentTime
         }
     }
 
