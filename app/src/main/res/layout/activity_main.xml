@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/sensitivity_slider_description"
-        android:max="9"
+        android:max="4"
         android:progress="4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,51 +47,69 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider" />
 
-    <!-- SeekBar pour ajuster le temps minimum entre deux secousses -->
-    <SeekBar
-        android:id="@+id/time_slider"
-        android:layout_width="200dp"
+    <!-- LinearLayout pour les SeekBars de temps -->
+    <LinearLayout
+        android:id="@+id/time_sliders_layout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginTop="16dp"
-        android:contentDescription="@string/time_slider_description"
-        android:max="8"
-        android:progress="5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sensitivity_value" />
+        app:layout_constraintTop_toBottomOf="@+id/sensitivity_value">
 
-    <TextView
-        android:id="@+id/time_value"
-        android:layout_width="wrap_content"
+        <!-- SeekBar pour ajuster le temps minimum entre deux secousses -->
+        <SeekBar
+            android:id="@+id/time_slider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:contentDescription="@string/time_slider_description"
+            android:max="8"
+            android:progress="5" />
+
+        <!-- SeekBar pour ajuster le temps maximum pour que les deux secousses aient lieu -->
+        <SeekBar
+            android:id="@+id/time_max_slider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:contentDescription="@string/time_max_slider_description"
+            android:max="5"
+            android:progress="4" />
+    </LinearLayout>
+
+    <!-- LinearLayout pour les labels des SeekBars de temps -->
+    <LinearLayout
+        android:id="@+id/time_labels_layout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/time_delay"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_slider"
+        android:orientation="horizontal"
         android:layout_marginTop="8dp"
-        android:textSize="16sp"/>
-
-    <!-- SeekBar pour ajuster le temps maximum pour que les deux secousses aient lieu -->
-    <SeekBar
-        android:id="@+id/time_max_slider"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/time_max_slider_description"
-        android:max="5"
-        android:progress="4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_value" />
+        app:layout_constraintTop_toBottomOf="@+id/time_sliders_layout">
 
-    <TextView
-        android:id="@+id/time_max_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/time_max_delay"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_max_slider"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"/>
+        <!-- Label pour le temps minimum -->
+        <TextView
+            android:id="@+id/time_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/time_delay"
+            android:textSize="16sp"/>
+
+        <!-- Label pour le temps maximum -->
+        <TextView
+            android:id="@+id/time_max_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:text="@string/time_max_delay"
+            android:textSize="16sp"/>
+    </LinearLayout>
 
     <!-- Cercle GO qui change de couleur -->
     <FrameLayout
@@ -103,7 +121,7 @@
         android:contentDescription="@string/go_circle_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_max_value">
+        app:layout_constraintTop_toBottomOf="@+id/time_labels_layout">
 
         <TextView
             android:id="@+id/go_text"
