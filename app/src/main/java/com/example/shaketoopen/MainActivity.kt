@@ -1,7 +1,6 @@
 package com.example.shaketoopen
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -15,7 +14,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.shaketoopen.R
+import kotlin.math.sqrt
+
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val z = it.values[2]
 
             val currentTime = System.currentTimeMillis()
-            val magnitude = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val magnitude = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 
             // Vérification de l'intensité de la secousse
             if (magnitude > shakeThreshold) {
@@ -192,6 +192,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             lastTime = currentTime
         }
     }
+
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
