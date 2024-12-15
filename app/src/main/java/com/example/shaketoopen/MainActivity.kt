@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         closeButton = findViewById(R.id.close_button)
 
         // Initialiser les valeurs par défaut
+        sensitivitySlider.progress = 3 // Définir la sensibilité par défaut à 3
         timeValue.text = getString(R.string.time_delay, shakeTimeWindow / 1000.0)
         timeMaxValue.text = getString(R.string.time_max_delay, shakeTimeMax / 1000.0)
 
