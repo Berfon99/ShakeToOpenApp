@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.shaketoopen.R
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -141,6 +142,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     statusText.text = getString(R.string.one_shake_detected)
                 }
                 lastTime = currentTime
+            } else if (currentTime - lastTime > shakeTimeMax) {
+                // Réinitialiser le compteur de secousses si la seconde secousse n'arrive pas dans le délai maximum
+                shakeCount = 0
+                goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
+                goCircleGreen = false  // Réinitialiser l'état du GO
+                statusText.text = getString(R.string.status_waiting)
             }
         }
     }
