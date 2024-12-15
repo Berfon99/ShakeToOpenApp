@@ -1,5 +1,7 @@
 package com.example.shaketoopen
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -11,6 +13,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.shaketoopen.R
 
@@ -36,7 +39,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var goCircle: FrameLayout
     private lateinit var goText: TextView
     private lateinit var toggleDetectionButton: Button
-    private lateinit var resetButton: Button
+    private lateinit var launchXCTrackButton: Button
     private lateinit var closeButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +59,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         goCircle = findViewById(R.id.go_circle)
         goText = findViewById(R.id.go_text)
         toggleDetectionButton = findViewById(R.id.toggle_detection_button)
-        resetButton = findViewById(R.id.reset_button)
+        launchXCTrackButton = findViewById(R.id.launch_xctrack_button)
         closeButton = findViewById(R.id.close_button)
 
         // Initialiser les valeurs par défaut
@@ -172,13 +175,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    // Méthode pour réinitialiser la détection
+    // Méthode pour lancer XCTrack
     @SuppressWarnings("unused")
-    fun resetDetection(view: View) {
-        shakeCount = 0
-        goCircle.setBackgroundColor(Color.RED)  // Remettre GO en rouge
-        goCircleGreen = false  // Réinitialiser l'état du GO
-        statusText.text = getString(R.string.status_waiting)
+    fun launchXCTrack(view: View) {
+        val packageManager = packageManager
+        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
+
+        if (launchIntent != null) {
+            // XCTrack est installé
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
+            val runningTasks = activityManager.getRunningTasks(1)
+            val topActivity = runningTasks[0].topActivity
+            if (topActivity?.packageName == "org.xcontest.XCTrack") {
+                // XCTrack est en cours d'exécution, le mettre en avant-plan
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+            startActivity(launchIntent)
+        } else {
+            // XCTrack n'est pas installé
+            Toast.makeText(this, "XCTrack non installé", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // Méthode pour fermer l'application
