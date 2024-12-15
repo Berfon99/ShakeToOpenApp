@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lastTime: Long = 0
     private var shakeCount = 0
     private var goCircleGreen = false  // Flag pour vérifier si GO est déjà vert
-    private var detectionEnabled = false
+    private var detectionEnabled = true  // Activer la détection de secousses dès le lancement
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var timeMaxSlider: SeekBar
     private lateinit var goCircle: FrameLayout
     private lateinit var goText: TextView
-    private lateinit var toggleDetectionButton: Button
     private lateinit var launchXCTrackButton: Button
     private lateinit var closeButton: Button
 
@@ -58,7 +57,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         timeMaxSlider = findViewById(R.id.time_max_slider)
         goCircle = findViewById(R.id.go_circle)
         goText = findViewById(R.id.go_text)
-        toggleDetectionButton = findViewById(R.id.toggle_detection_button)
         launchXCTrackButton = findViewById(R.id.launch_xctrack_button)
         closeButton = findViewById(R.id.close_button)
 
@@ -112,6 +110,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         accelerometer?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
+
+        // Mettre à jour le texte de statut pour indiquer que la détection est en cours
+        statusText.text = getString(R.string.detection_in_progress)
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -160,19 +161,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-    }
-
-    // Méthode pour démarrer/arrêter la détection
-    @SuppressWarnings("unused")
-    fun toggleDetection(view: View) {
-        detectionEnabled = !detectionEnabled
-        if (detectionEnabled) {
-            toggleDetectionButton.text = getString(R.string.stop_detection)
-            statusText.text = getString(R.string.detection_in_progress)
-        } else {
-            toggleDetectionButton.text = getString(R.string.start_detection)
-            statusText.text = getString(R.string.detection_stopped)
-        }
     }
 
     // Méthode pour lancer XCTrack
