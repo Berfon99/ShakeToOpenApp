@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var shakeCount = 0
     private var goCircleGreen = false  // Flag pour vérifier si GO est déjà vert
     private var detectionEnabled = true  // Activer la détection de secousses dès le lancement
+    private var shakeToXCTrackEnabled = false  // Flag pour vérifier si le mode "Secousses to XCTrack" est activé
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var goCircle: FrameLayout
     private lateinit var goText: TextView
     private lateinit var launchXCTrackButton: Button
+    private lateinit var toggleShakeToXCTrackButton: Button
     private lateinit var closeButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +60,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         goCircle = findViewById(R.id.go_circle)
         goText = findViewById(R.id.go_text)
         launchXCTrackButton = findViewById(R.id.launch_xctrack_button)
+        toggleShakeToXCTrackButton = findViewById(R.id.toggle_shake_to_xctrack_button)
         closeButton = findViewById(R.id.close_button)
 
         // Initialiser les valeurs par défaut
@@ -139,6 +142,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         goCircle.setBackgroundColor(Color.GREEN)
                         goCircleGreen = true  // On empêche de remettre GO en rouge
                         statusText.text = getString(R.string.two_shakes_detected)
+                        if (shakeToXCTrackEnabled) {
+                            launchXCTrack(null)  // Lancer XCTrack si le mode "Secousses to XCTrack" est activé
+                        }
                     }
                 } else {
                     shakeCount = 1
@@ -165,7 +171,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     // Méthode pour lancer XCTrack
     @SuppressWarnings("unused")
-    fun launchXCTrack(view: View) {
+    fun launchXCTrack(view: View?) {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
@@ -182,6 +188,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         } else {
             // XCTrack n'est pas installé
             Toast.makeText(this, "XCTrack non installé", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Méthode pour activer/désactiver le mode "Secousses to XCTrack"
+    @SuppressWarnings("unused")
+    fun toggleShakeToXCTrack(view: View) {
+        shakeToXCTrackEnabled = !shakeToXCTrackEnabled
+        if (shakeToXCTrackEnabled) {
+            toggleShakeToXCTrackButton.text = getString(R.string.disable_shake_to_xctrack)
+        } else {
+            toggleShakeToXCTrackButton.text = getString(R.string.enable_shake_to_xctrack)
         }
     }
 

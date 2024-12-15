@@ -126,12 +126,25 @@
         android:onClick="launchXCTrack"
         style="@style/Widget.AppCompat.Button.Colored"/>
 
+    <!-- Bouton pour activer/désactiver le mode "Secousses to XCTrack" -->
+    <Button
+        android:id="@+id/toggle_shake_to_xctrack_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Activer Secousses to XCTrack"
+        app:layout_constraintTop_toBottomOf="@+id/launch_xctrack_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:onClick="toggleShakeToXCTrack"
+        style="@style/Widget.AppCompat.Button.Colored"/>
+
     <!-- Bouton pour fermer l'application -->
     <Button
         android:id="@+id/close_button"
         android:layout_width="0dp"
         android:text="@string/close_button_text"
-        app:layout_constraintTop_toBottomOf="@+id/launch_xctrack_button"
+        app:layout_constraintTop_toBottomOf="@+id/toggle_shake_to_xctrack_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"

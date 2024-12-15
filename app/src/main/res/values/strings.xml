@@ -19,4 +19,6 @@
     <string name="detection_stopped">Détection arrêtée</string>
     <string name="sensitivity_medium">Sensibilité : Moyen</string>
     <string name="one_shake_detected">Une secousse détectée!</string>
+    <string name="enable_shake_to_xctrack">Activer Secousses to XCTrack</string>
+    <string name="disable_shake_to_xctrack">Désactiver Secousses to XCTrack</string>
 </resources>
