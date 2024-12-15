@@ -120,6 +120,39 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         statusText.text = getString(R.string.detection_in_progress)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("shakeToXCTrackEnabled", shakeToXCTrackEnabled)
+        outState.putInt("shakeCount", shakeCount)
+        outState.putBoolean("goCircleGreen", goCircleGreen)
+        outState.putLong("lastTime", lastTime)
+        outState.putLong("firstShakeTime", firstShakeTime)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        shakeToXCTrackEnabled = savedInstanceState.getBoolean("shakeToXCTrackEnabled")
+        shakeCount = savedInstanceState.getInt("shakeCount")
+        goCircleGreen = savedInstanceState.getBoolean("goCircleGreen")
+        lastTime = savedInstanceState.getLong("lastTime")
+        firstShakeTime = savedInstanceState.getLong("firstShakeTime")
+
+        // Mettre à jour l'état du bouton et du cercle GO
+        toggleShakeToXCTrackButton.text = if (shakeToXCTrackEnabled) {
+            getString(R.string.disable_shake_to_xctrack)
+        } else {
+            getString(R.string.enable_shake_to_xctrack)
+        }
+
+        if (goCircleGreen) {
+            goCircle.setBackgroundColor(Color.GREEN)
+        } else if (shakeCount == 1) {
+            goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
+        } else {
+            goCircle.setBackgroundColor(Color.RED)  // Rouge
+        }
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (!detectionEnabled) return
 
