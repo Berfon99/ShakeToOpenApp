@@ -1,13 +1,13 @@
 package com.example.shaketoopen
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -156,6 +156,39 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    // Méthode pour lancer XCTrack
+    fun launchXCTrack(view: View?) {
+        val packageManager = packageManager
+        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
+
+        if (launchIntent != null) {
+            // XCTrack est installé
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
+            val runningAppProcesses = activityManager.runningAppProcesses
+            val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
+
+            if (isXCTrackRunning) {
+                // XCTrack est en cours d'exécution, le mettre en avant-plan
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            } else {
+                // Ajouter des flags pour lancer une nouvelle tâche
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            try {
+                startActivity(launchIntent)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to launch XCTrack", e)
+                Toast.makeText(this, "Échec du lancement de XCTrack", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            // XCTrack n'est pas installé
+            Toast.makeText(this, "XCTrack non installé", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (!detectionEnabled) return
 
@@ -203,27 +236,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
-    // Méthode pour lancer XCTrack
-    @SuppressWarnings("unused")
-    fun launchXCTrack(view: View?) {
-        val packageManager = packageManager
-        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
-
-        if (launchIntent != null) {
-            // XCTrack est installé
-            val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
-            val runningTasks = activityManager.getRunningTasks(1)
-            val topActivity = runningTasks[0].topActivity
-            if (topActivity?.packageName == "org.xcontest.XCTrack") {
-                // XCTrack est en cours d'exécution, le mettre en avant-plan
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            }
-            startActivity(launchIntent)
-        } else {
-            // XCTrack n'est pas installé
-            Toast.makeText(this, "XCTrack non installé", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     // Méthode pour activer/désactiver le mode "Secousses to XCTrack"
     @SuppressWarnings("unused")
