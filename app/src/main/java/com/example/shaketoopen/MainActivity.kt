@@ -1,5 +1,6 @@
 package com.example.shaketoopen
 
+import android.app.ActivityManager
 import android.content.Intent
 import android.graphics.Color
 import android.hardware.Sensor
@@ -8,6 +9,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.PowerManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -36,6 +39,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var closeButton: Button
 
     private lateinit var wakeLock: PowerManager.WakeLock
+    private val handler = Handler(Looper.getMainLooper())
+    private val inactivityTimeout: Long = 10000 // 10 seconds of inactivity
+
+    private val releaseWakeLockRunnable = Runnable {
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +93,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensitivityValue.text = getString(R.string.sensitivity_level, 3) // Default sensitivity value
         timeValue.text = getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0) // Default minimum time value
         timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0) // Default maximum time value
-        timeMaxSlider.progress = 3 // Default maximum time slider position corresponding to 2.0 s
+        timeMaxSlider.progress = 2 // Default maximum time slider position corresponding to 2.0 s
 
         setupSliders()
         updateStatusText()
@@ -90,8 +101,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun acquireWakeLock() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ShakeToOpen::WakeLock")
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            "ShakeToOpen::WakeLock"
+        )
         wakeLock.acquire()
+        handler.postDelayed(releaseWakeLockRunnable, inactivityTimeout)
     }
 
     private fun setupSliders() {
@@ -124,7 +139,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         })
 
         timeMaxSlider.max = 5
-        timeMaxSlider.progress = 3 // Default maximum time slider position corresponding to 2.0 s
+        timeMaxSlider.progress = 2 // Default maximum time slider position corresponding to 2.0 s
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 viewModel.shakeTimeMax = (500 + progress * 500).toLong()
@@ -180,6 +195,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     viewModel.goCircleGreen = true
                     statusText.text = getString(R.string.two_shakes_detected)
                     if (viewModel.shakeToXCTrackEnabled) {
+                        // Acquire the wake lock to turn on the screen
+                        acquireWakeLock()
+                        // Bring the app to the foreground if it is not already
+                        bringAppToForeground()
+                        // Launch XCTrack after the screen is turned on
                         launchXCTrack(null)
                     }
                 }
@@ -199,6 +219,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+        handler.removeCallbacks(releaseWakeLockRunnable)
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
@@ -227,13 +248,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         )
     }
 
+    // Method to bring the app to the foreground
+    private fun bringAppToForeground() {
+        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val runningTasks = activityManager.getRunningTasks(1)
+        if (runningTasks.isNotEmpty()) {
+            val topActivity = runningTasks[0].topActivity
+            if (topActivity?.packageName != packageName) {
+                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(launchIntent)
+            }
+        }
+    }
+
     // Method to launch XCTrack
     fun launchXCTrack(view: View?) {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
         if (launchIntent != null) {
-            val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
             val runningAppProcesses = activityManager.runningAppProcesses
             val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
 
