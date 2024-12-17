@@ -12,9 +12,9 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- LinearLayout for the Enable Shake to XCTrack button -->
+        <!-- LinearLayout for the Enable Shake to XCTrack button and the status text -->
         <LinearLayout
-            android:id="@+id/go_buttons_layout"
+            android:id="@+id/top_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -34,23 +34,22 @@
                 android:onClick="toggleShakeToXCTrack"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:backgroundTint="@android:color/holo_orange_light"/>
-        </LinearLayout>
 
-        <!-- Status text -->
-        <TextView
-            android:id="@+id/status_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/status_waiting"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/go_buttons_layout"
-            android:layout_marginTop="16dp"
-            android:textAlignment="center"
-            android:padding="8dp"
-            android:background="@android:color/black"
-            android:textColor="@android:color/white"/>
+            <!-- Status text -->
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:text="@string/status_waiting"
+                android:textSize="18sp"
+                android:layout_marginStart="16dp"
+                android:textAlignment="center"
+                android:padding="8dp"
+                android:background="@android:color/black"
+                android:textColor="@android:color/white"
+                android:gravity="center"/>
+        </LinearLayout>
 
         <!-- ConstraintLayout for the sensitivity slider and its label -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -59,7 +58,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/status_text"
+            app:layout_constraintTop_toBottomOf="@+id/top_layout"
             android:layout_marginTop="16dp">
 
             <!-- SeekBar to adjust sensitivity -->
