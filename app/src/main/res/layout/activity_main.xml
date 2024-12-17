@@ -70,13 +70,11 @@
             android:background="@android:color/black"
             android:textColor="@android:color/white"/>
 
-        <!-- LinearLayout for the sensitivity slider and its label -->
-        <LinearLayout
+        <!-- ConstraintLayout for the sensitivity slider and its label -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/sensitivity_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/status_text"
@@ -85,11 +83,18 @@
             <!-- SeekBar to adjust sensitivity -->
             <SeekBar
                 android:id="@+id/sensitivity_slider"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:contentDescription="@string/sensitivity_slider_description"
                 android:max="4"
-                android:progress="3" />
+                android:progress="3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <!-- Label for sensitivity -->
             <TextView
@@ -98,8 +103,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/sensitivity_medium"
-                android:textSize="16sp"/>
-        </LinearLayout>
+                android:textSize="16sp"
+                app:layout_constraintTop_toBottomOf="@+id/sensitivity_slider"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- LinearLayout for the time SeekBars -->
         <LinearLayout
