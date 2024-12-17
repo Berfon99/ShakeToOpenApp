@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- LinearLayout for the GO button and the Enable Shake to XCTrack button -->
+        <!-- LinearLayout for the Enable Shake to XCTrack button -->
         <LinearLayout
             android:id="@+id/go_buttons_layout"
             android:layout_width="0dp"
@@ -34,24 +34,6 @@
                 android:onClick="toggleShakeToXCTrack"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:backgroundTint="@android:color/holo_orange_light"/>
-
-            <!-- GO circle that changes color -->
-            <FrameLayout
-                android:id="@+id/go_circle"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:background="@drawable/circle_shape"
-                android:contentDescription="@string/go_circle_description">
-
-                <TextView
-                    android:id="@+id/go_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/go_text"
-                    android:textColor="@android:color/white"
-                    android:textSize="24sp" />
-            </FrameLayout>
         </LinearLayout>
 
         <!-- Status text -->

@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
@@ -31,8 +30,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var timeSlider: SeekBar
     private lateinit var timeMaxValue: TextView
     private lateinit var timeMaxSlider: SeekBar
-    private lateinit var goCircle: FrameLayout
-    private lateinit var goText: TextView
     private lateinit var launchXCTrackButton: Button
     private lateinit var toggleShakeToXCTrackButton: Button
     private lateinit var closeButton: Button
@@ -53,22 +50,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         timeSlider = findViewById(R.id.time_slider)
         timeMaxValue = findViewById(R.id.time_max_value)
         timeMaxSlider = findViewById(R.id.time_max_slider)
-        goCircle = findViewById(R.id.go_circle)
-        goText = findViewById(R.id.go_text)
         launchXCTrackButton = findViewById(R.id.launch_xctrack_button)
         toggleShakeToXCTrackButton = findViewById(R.id.toggle_shake_to_xctrack_button)
         closeButton = findViewById(R.id.close_button)
 
-        // Initialize default values
-        sensitivitySlider.progress = 3 // Set default sensitivity to 3
+        // Initialiser les valeurs par défaut
+        sensitivitySlider.progress = 3 // Définir la sensibilité par défaut à 3
         timeValue.text = getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0)
         timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
 
-        // Sensitivity slider
+        // Sensibilité du slider
         sensitivitySlider.max = 4 // Set the maximum value to 4 for 5 levels
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // Adjust sensitivity inversely proportional
+                // Ajustement de la sensibilité de manière inversement proportionnelle
                 // New mapping: progress 0 -> threshold 30, progress 4 -> threshold 15
                 viewModel.shakeThreshold = 30f - (progress * 3.75f)  // Adjust the multiplier to spread out the threshold values
                 sensitivityValue.text = getString(R.string.sensitivity_level, progress + 1)
@@ -78,10 +73,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Minimum time between shakes (milliseconds)
+        // Temps minimum entre secousses (millisecondes)
         timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                viewModel.shakeTimeWindow = (200 + progress * 50).toLong() // Convert progress to milliseconds
+                viewModel.shakeTimeWindow = (200 + progress * 50).toLong() // Convertir la progression en millisecondes
                 timeValue.text = getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0)
                 if (viewModel.shakeTimeWindow > viewModel.shakeTimeMax) {
                     viewModel.shakeTimeWindow = viewModel.shakeTimeMax
@@ -94,10 +89,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Maximum time for two shakes to occur (milliseconds)
+        // Temps maximum pour que les deux secousses aient lieu (millisecondes)
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                viewModel.shakeTimeMax = (500 + progress * 500).toLong() // Convert progress to milliseconds
+                viewModel.shakeTimeMax = (500 + progress * 500).toLong() // Convertir la progression en millisecondes
                 timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
                 if (viewModel.shakeTimeMax < viewModel.shakeTimeWindow) {
                     viewModel.shakeTimeMax = viewModel.shakeTimeWindow
@@ -114,7 +109,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
 
-        // Update status text to indicate detection is in progress
+        // Mettre à jour le texte de statut pour indiquer que la détection est en cours
         statusText.text = getString(R.string.detection_in_progress)
     }
 
@@ -135,32 +130,32 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         viewModel.lastTime = savedInstanceState.getLong("lastTime")
         viewModel.firstShakeTime = savedInstanceState.getLong("firstShakeTime")
 
-        // Update the state of the button and the GO circle
+        // Mettre à jour l'état du bouton et du cercle GO
         toggleShakeToXCTrackButton.text = if (viewModel.shakeToXCTrackEnabled) {
             getString(R.string.disable_shake_to_xctrack)
         } else {
             getString(R.string.enable_shake_to_xctrack)
         }
 
-        updateGoCircleColor()
+        updateStatusColor()
     }
 
-    // Method to launch XCTrack
+    // Méthode pour lancer XCTrack
     fun launchXCTrack(view: View?) {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
         if (launchIntent != null) {
-            // XCTrack is installed
+            // XCTrack est installé
             val activityManager = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
             val runningAppProcesses = activityManager.runningAppProcesses
             val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
 
             if (isXCTrackRunning) {
-                // XCTrack is running, bring it to the foreground
+                // XCTrack est en cours d'exécution, le mettre en avant-plan
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             } else {
-                // Add flags to launch a new task
+                // Ajouter des flags pour lancer une nouvelle tâche
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             try {
@@ -170,7 +165,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 Toast.makeText(this, "Failed to launch XCTrack", Toast.LENGTH_SHORT).show()
             }
         } else {
-            // XCTrack is not installed
+            // XCTrack n'est pas installé
             Toast.makeText(this, "XCTrack not installed", Toast.LENGTH_SHORT).show()
         }
     }
@@ -185,29 +180,29 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             val currentTime = System.currentTimeMillis()
             val magnitude = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-            // Check shake intensity
+            // Vérification de l'intensité de la secousse
             if (magnitude > viewModel.shakeThreshold) {
                 if (viewModel.shakeCount == 0) {
-                    // First shake detected, GO turns orange
+                    // Première secousse détectée, GO devient orange
                     viewModel.shakeCount = 1
-                    goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
+                    statusText.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
                     statusText.text = getString(R.string.one_shake_detected)
-                    viewModel.firstShakeTime = currentTime // Record the time of the first shake
+                    viewModel.firstShakeTime = currentTime // Enregistrer le temps de la première secousse
                 } else if (viewModel.shakeCount == 1 && currentTime - viewModel.firstShakeTime > viewModel.shakeTimeWindow && currentTime - viewModel.firstShakeTime < viewModel.shakeTimeMax) {
-                    // Two shakes detected, GO turns green and stays green
+                    // Deux secousses détectées, GO devient vert et reste vert
                     viewModel.shakeCount = 2
-                    goCircle.setBackgroundColor(Color.GREEN)
-                    viewModel.goCircleGreen = true  // Prevent GO from turning red again
+                    statusText.setBackgroundColor(Color.GREEN)
+                    viewModel.goCircleGreen = true  // On empêche de remettre GO en rouge
                     statusText.text = getString(R.string.two_shakes_detected)
                     if (viewModel.shakeToXCTrackEnabled) {
-                        launchXCTrack(null)  // Launch XCTrack if "Shake to XCTrack" mode is enabled
+                        launchXCTrack(null)  // Lancer XCTrack si le mode "Secousses to XCTrack" est activé
                     }
                 }
             } else if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeMax) {
-                // Reset shake counter if the second shake does not occur within the maximum time
+                // Réinitialiser le compteur de secousses si la seconde secousse n'arrive pas dans le délai maximum
                 viewModel.shakeCount = 0
-                goCircle.setBackgroundColor(Color.RED)  // Turn GO red again
-                viewModel.goCircleGreen = false  // Reset GO state
+                statusText.setBackgroundColor(Color.RED)  // Remettre GO en rouge
+                viewModel.goCircleGreen = false  // Réinitialiser l'état du GO
                 statusText.text = getString(R.string.status_waiting)
             }
             viewModel.lastTime = currentTime
@@ -221,7 +216,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
-    // Method to enable/disable "Shake to XCTrack" mode
+    // Méthode pour activer/désactiver le mode "Secousses to XCTrack"
     @SuppressWarnings("unused")
     fun toggleShakeToXCTrack(view: View) {
         viewModel.shakeToXCTrackEnabled = !viewModel.shakeToXCTrackEnabled
@@ -232,19 +227,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    // Method to close the application
+    // Méthode pour fermer l'application
     @SuppressWarnings("unused")
     fun closeApp(view: View) {
-        finish()  // Close the application
+        finish()  // Ferme l'application
     }
 
-    private fun updateGoCircleColor() {
+    private fun updateStatusColor() {
         if (viewModel.goCircleGreen) {
-            goCircle.setBackgroundColor(Color.GREEN)
+            statusText.setBackgroundColor(Color.GREEN)
         } else if (viewModel.shakeCount == 1) {
-            goCircle.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
+            statusText.setBackgroundColor(Color.parseColor("#FFA500")) // Orange
         } else {
-            goCircle.setBackgroundColor(Color.RED)  // Red
+            statusText.setBackgroundColor(Color.RED)  // Rouge
         }
     }
 }
