@@ -1,29 +1,29 @@
 <resources>
     <!-- Existing strings -->
     <string name="app_name">ShakeToOpen</string>
-    <string name="sensitivity_slider_description">Ajustez la sensibilité de détection des secousses</string>
-    <string name="time_slider_description">Ajustez le temps minimum entre deux secousses</string>
-    <string name="time_max_slider_description">Ajustez le temps maximum pour que les deux secousses aient lieu</string>
-    <string name="go_circle_description">Cercle GO qui change de couleur lorsque deux secousses sont détectées</string>
-    <string name="status_waiting">Statut : En attente de secousses&#8230;</string>
-    <string name="sensitivity_level">Sensibilité : Niveau %1$d</string>
-    <string name="time_delay">Temps minimum : %.1f s</string>
-    <string name="time_max_delay">Temps maximum : %.1f s</string>
+    <string name="sensitivity_slider_description">Adjust shake detection sensitivity</string>
+    <string name="time_slider_description">Adjust minimum time between two shakes</string>
+    <string name="time_max_slider_description">Adjust maximum time for two shakes to occur</string>
+    <string name="go_circle_description">GO circle that changes color when two shakes are detected</string>
+    <string name="status_waiting">Status: Waiting for shakes&#8230;</string>
+    <string name="sensitivity_level">Sensitivity: Level %1$d</string>
+    <string name="time_delay">Minimum time: %.1f s</string>
+    <string name="time_max_delay">Maximum time: %.1f s</string>
     <string name="go_text">GO</string>
-    <string name="toggle_detection_button_text">Démarrer la détection</string>
-    <string name="reset_button_text">Réinitialiser</string>
-    <string name="close_button_text">Fermer application</string>
-    <string name="two_shakes_detected">Deux secousses détectées!</string>
-    <string name="stop_detection">Arrêter la détection</string>
-    <string name="start_detection">Démarrer la détection</string>
-    <string name="detection_in_progress">Détection en cours&#8230;</string>
-    <string name="detection_stopped">Détection arrêtée</string>
-    <string name="sensitivity_medium">Sensibilité : Moyen</string>
-    <string name="one_shake_detected">Une secousse détectée!</string>
-    <string name="enable_shake_to_xctrack">Activer Secousses to XCTrack</string>
-    <string name="disable_shake_to_xctrack">Désactiver Secousses to XCTrack</string>
+    <string name="toggle_detection_button_text">Start Detection</string>
+    <string name="reset_button_text">Reset</string>
+    <string name="close_button_text">Close application</string>
+    <string name="two_shakes_detected">Two shakes detected!</string>
+    <string name="stop_detection">Stop Detection</string>
+    <string name="start_detection">Start Detection</string>
+    <string name="detection_in_progress">Detection in progress&#8230;</string>
+    <string name="detection_stopped">Detection stopped</string>
+    <string name="sensitivity_medium">Sensitivity: Medium</string>
+    <string name="one_shake_detected">One shake detected!</string>
+    <string name="enable_shake_to_xctrack">Enable Shake to XCTrack</string>
+    <string name="disable_shake_to_xctrack">Disable Shake to XCTrack</string>
 
     <!-- New strings -->
-    <string name="launch_xctrack_button_text">Lancer XCTrack</string>
-    <string name="enable_shake_to_xctrack_button_text">Activer Secousses to XCTrack</string>
+    <string name="launch_xctrack_button_text">Launch XCTrack</string>
+    <string name="enable_shake_to_xctrack_button_text">Enable Shake to XCTrack</string>
 </resources>

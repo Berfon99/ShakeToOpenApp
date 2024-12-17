@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- LinearLayout pour le bouton GO et le bouton Activer Secousses to XCTrack -->
+        <!-- LinearLayout for the GO button and the Enable Shake to XCTrack button -->
         <LinearLayout
             android:id="@+id/go_buttons_layout"
             android:layout_width="0dp"
@@ -23,7 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Bouton pour activer/désactiver le mode "Secousses to XCTrack" -->
+            <!-- Button to enable/disable "Shake to XCTrack" mode -->
             <Button
                 android:id="@+id/toggle_shake_to_xctrack_button"
                 android:layout_width="0dp"
@@ -35,7 +35,7 @@
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:backgroundTint="@android:color/holo_orange_light"/>
 
-            <!-- Cercle GO qui change de couleur -->
+            <!-- GO circle that changes color -->
             <FrameLayout
                 android:id="@+id/go_circle"
                 android:layout_width="100dp"
@@ -70,7 +70,7 @@
             android:background="@android:color/black"
             android:textColor="@android:color/white"/>
 
-        <!-- LinearLayout pour le slider de sensibilité et son label -->
+        <!-- LinearLayout for the sensitivity slider and its label -->
         <LinearLayout
             android:id="@+id/sensitivity_layout"
             android:layout_width="wrap_content"
@@ -82,7 +82,7 @@
             app:layout_constraintTop_toBottomOf="@+id/status_text"
             android:layout_marginTop="16dp">
 
-            <!-- SeekBar pour ajuster la sensibilité -->
+            <!-- SeekBar to adjust sensitivity -->
             <SeekBar
                 android:id="@+id/sensitivity_slider"
                 android:layout_width="200dp"
@@ -91,7 +91,7 @@
                 android:max="4"
                 android:progress="3" />
 
-            <!-- Label pour la sensibilité -->
+            <!-- Label for sensitivity -->
             <TextView
                 android:id="@+id/sensitivity_value"
                 android:layout_width="wrap_content"
@@ -101,7 +101,7 @@
                 android:textSize="16sp"/>
         </LinearLayout>
 
-        <!-- LinearLayout pour les SeekBars de temps -->
+        <!-- LinearLayout for the time SeekBars -->
         <LinearLayout
             android:id="@+id/time_sliders_layout"
             android:layout_width="0dp"
@@ -112,7 +112,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/sensitivity_layout">
 
-            <!-- SeekBar pour ajuster le temps minimum entre deux secousses -->
+            <!-- SeekBar to adjust the minimum time between two shakes -->
             <SeekBar
                 android:id="@+id/time_slider"
                 android:layout_width="0dp"
@@ -122,7 +122,7 @@
                 android:max="8"
                 android:progress="5" />
 
-            <!-- SeekBar pour ajuster le temps maximum pour que les deux secousses aient lieu -->
+            <!-- SeekBar to adjust the maximum time for two shakes to occur -->
             <SeekBar
                 android:id="@+id/time_max_slider"
                 android:layout_width="0dp"
@@ -134,7 +134,7 @@
                 android:progress="4" />
         </LinearLayout>
 
-        <!-- LinearLayout pour les labels des SeekBars de temps -->
+        <!-- LinearLayout for the labels of the time SeekBars -->
         <LinearLayout
             android:id="@+id/time_labels_layout"
             android:layout_width="0dp"
@@ -145,7 +145,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/time_sliders_layout">
 
-            <!-- Label pour le temps minimum -->
+            <!-- Label for the minimum time -->
             <TextView
                 android:id="@+id/time_value"
                 android:layout_width="0dp"
@@ -154,7 +154,7 @@
                 android:text="@string/time_delay"
                 android:textSize="16sp"/>
 
-            <!-- Label pour le temps maximum -->
+            <!-- Label for the maximum time -->
             <TextView
                 android:id="@+id/time_max_value"
                 android:layout_width="0dp"
@@ -165,7 +165,7 @@
                 android:textSize="16sp"/>
         </LinearLayout>
 
-        <!-- Bouton pour fermer l'application -->
+        <!-- Button to close the application -->
         <Button
             android:id="@+id/close_button"
             android:layout_width="0dp"
@@ -180,7 +180,7 @@
             style="@style/Widget.AppCompat.Button.Colored"
             android:backgroundTint="@android:color/holo_orange_light"/>
 
-        <!-- Bouton pour lancer XCTrack -->
+        <!-- Button to launch XCTrack -->
         <Button
             android:id="@+id/launch_xctrack_button"
             android:layout_width="0dp"
