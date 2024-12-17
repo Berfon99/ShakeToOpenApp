@@ -73,7 +73,7 @@
         <!-- LinearLayout for the sensitivity slider and its label -->
         <LinearLayout
             android:id="@+id/sensitivity_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
@@ -85,7 +85,7 @@
             <!-- SeekBar to adjust sensitivity -->
             <SeekBar
                 android:id="@+id/sensitivity_slider"
-                android:layout_width="200dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/sensitivity_slider_description"
                 android:max="4"
@@ -165,35 +165,40 @@
                 android:textSize="16sp"/>
         </LinearLayout>
 
-        <!-- Button to close the application -->
-        <Button
-            android:id="@+id/close_button"
-            android:layout_width="0dp"
-            android:text="@string/close_button_text"
-            app:layout_constraintTop_toBottomOf="@+id/time_labels_layout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:textSize="18sp"
-            android:layout_height="50dp"
-            android:onClick="closeApp"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:backgroundTint="@android:color/holo_orange_light"/>
-
-        <!-- Button to launch XCTrack -->
-        <Button
-            android:id="@+id/launch_xctrack_button"
+        <!-- LinearLayout for the Close Application and Launch XCTrack buttons -->
+        <LinearLayout
+            android:id="@+id/button_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/launch_xctrack_button_text"
-            app:layout_constraintTop_toBottomOf="@+id/close_button"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:orientation="horizontal"
             android:layout_marginTop="16dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
-            android:onClick="launchXCTrack"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:backgroundTint="@android:color/holo_orange_light"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/time_labels_layout">
+
+            <!-- Button to close the application -->
+            <Button
+                android:id="@+id/close_button"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="@string/close_button_text"
+                android:textSize="18sp"
+                android:onClick="closeApp"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:backgroundTint="@android:color/holo_orange_light"/>
+
+            <!-- Button to launch XCTrack -->
+            <Button
+                android:id="@+id/launch_xctrack_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/launch_xctrack_button_text"
+                android:layout_marginStart="16dp"
+                android:onClick="launchXCTrack"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:backgroundTint="@android:color/holo_orange_light"/>
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
