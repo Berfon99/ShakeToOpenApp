@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun acquireWakeLock() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
         wakeLock.acquire(inactivityTimeout) // Acquire the wake lock with a timeout
@@ -209,6 +209,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     if (viewModel.shakeToXCTrackEnabled) {
                         // Acquire the wake lock to turn on the screen
                         acquireWakeLock()
+                        // Turn on the screen
+                        turnOnScreen()
                         // Bring the app to the foreground if it is not already
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
@@ -248,6 +250,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     fun closeApp(view: View) {
         finish()
+    }
+
+    // Method to turn on the screen
+    private fun turnOnScreen() {
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        if (!powerManager.isInteractive) {
+            wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
+        }
     }
 
     // Method to bring the app to the foreground

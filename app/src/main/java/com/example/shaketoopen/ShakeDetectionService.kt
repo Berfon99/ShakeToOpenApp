@@ -1,5 +1,6 @@
 package com.example.shaketoopen
 
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -11,6 +12,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
+import android.util.Log
 import android.view.View
 import androidx.core.app.NotificationCompat
 import kotlin.math.sqrt
@@ -20,6 +23,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
+    private lateinit var wakeLock: PowerManager.WakeLock
 
     override fun onCreate() {
         super.onCreate()
@@ -27,6 +31,13 @@ class ShakeDetectionService : Service(), SensorEventListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
+
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            "ShakeToOpen::WakeLock"
+        )
+        wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -85,7 +96,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
                     viewModel.goCircleGreen = true
                     if (viewModel.shakeToXCTrackEnabled) {
                         // Acquire the wake lock to turn on the screen
-                        acquireWakeLock()
+                        wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
                         // Bring the app to the foreground if it is not already
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
@@ -106,17 +117,43 @@ class ShakeDetectionService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-    }
-
-    private fun acquireWakeLock() {
-        // Implement wake lock acquisition logic here
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
     }
 
     private fun bringAppToForeground() {
-        // Implement logic to bring the app to the foreground
+        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val runningTasks = activityManager.getRunningTasks(1)
+        if (runningTasks.isNotEmpty()) {
+            val topActivity = runningTasks[0].topActivity
+            if (topActivity?.packageName != packageName) {
+                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(launchIntent)
+            }
+        }
     }
 
     private fun launchXCTrack(view: View?) {
-        // Implement logic to launch XCTrack
+        val packageManager = packageManager
+        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
+
+        if (launchIntent != null) {
+            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            val runningAppProcesses = activityManager.runningAppProcesses
+            val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
+
+            if (isXCTrackRunning) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            } else {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            try {
+                startActivity(launchIntent)
+            } catch (e: Exception) {
+                Log.e("ShakeDetectionService", "Failed to launch XCTrack", e)
+            }
+        }
     }
 }

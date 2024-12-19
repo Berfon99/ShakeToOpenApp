@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Declare the apps to query -->
     <queries>
@@ -30,6 +33,7 @@
 
         <service
             android:name=".ShakeDetectionService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="location"/>
     </application>
 </manifest>
