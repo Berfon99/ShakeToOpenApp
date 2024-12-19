@@ -1,6 +1,9 @@
 package com.example.shaketoopen
 
 import android.app.ActivityManager
+import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.hardware.Sensor
@@ -20,6 +23,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import kotlin.math.sqrt
+import java.util.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -56,6 +60,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         initializeSensors()
         initializeUI()
         acquireWakeLock()
+
+        // Démarrer le service en avant-plan
+        val intent = Intent(this, ShakeDetectionService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
     }
 
     private fun initializeViewModel() {
@@ -102,10 +114,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun acquireWakeLock() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK,
             "ShakeToOpen::WakeLock"
         )
-        wakeLock.acquire()
+        wakeLock.acquire(inactivityTimeout) // Acquire the wake lock with a timeout
         handler.postDelayed(releaseWakeLockRunnable, inactivityTimeout)
     }
 
@@ -238,27 +250,23 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         finish()
     }
 
-    private fun updateStatusColor() {
-        statusText.setBackgroundColor(
-            when {
-                viewModel.goCircleGreen -> Color.GREEN
-                viewModel.shakeCount == 1 -> Color.parseColor("#FFA500")
-                else -> Color.RED
-            }
-        )
-    }
-
     // Method to bring the app to the foreground
     private fun bringAppToForeground() {
-        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val runningTasks = activityManager.getRunningTasks(1)
-        if (runningTasks.isNotEmpty()) {
-            val topActivity = runningTasks[0].topActivity
-            if (topActivity?.packageName != packageName) {
-                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-                launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                startActivity(launchIntent)
+        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - 10000 // 10 seconds ago
+        val usageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
+        var isForeground = false
+        for (usageStat in usageStats) {
+            if (usageStat.packageName == packageName && usageStat.lastTimeUsed >= beginTime) {
+                isForeground = true
+                break
             }
+        }
+        if (!isForeground) {
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+            launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            startActivity(launchIntent)
         }
     }
 
@@ -268,9 +276,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
         if (launchIntent != null) {
-            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            val runningAppProcesses = activityManager.runningAppProcesses
-            val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
+            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val endTime = System.currentTimeMillis()
+            val beginTime = endTime - 10000 // 10 seconds ago
+            val usageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
+            var isXCTrackRunning = false
+            for (usageStat in usageStats) {
+                if (usageStat.packageName == "org.xcontest.XCTrack" && usageStat.lastTimeUsed >= beginTime) {
+                    isXCTrackRunning = true
+                    break
+                }
+            }
 
             if (isXCTrackRunning) {
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
