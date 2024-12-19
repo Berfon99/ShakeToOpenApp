@@ -10,6 +10,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.PowerManager
 import android.os.Bundle
 import android.os.Handler
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         // Start the foreground service
         val intent = Intent(this, ShakeDetectionService::class.java)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)

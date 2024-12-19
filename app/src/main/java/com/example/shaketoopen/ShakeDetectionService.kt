@@ -44,7 +44,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
                 "Shake Detection",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-            val manager = getSystemService(NotificationManager::class.java)
+            val manager = getSystemService(NotificationManager::class.java) as NotificationManager
             manager.createNotificationChannel(channel)
         }
 
