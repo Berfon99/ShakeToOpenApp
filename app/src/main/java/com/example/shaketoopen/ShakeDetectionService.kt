@@ -123,10 +123,10 @@ class ShakeDetectionService : Service(), SensorEventListener {
 
     private fun bringAppToForeground() {
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val runningAppProcesses = activityManager.runningAppProcesses
-        if (runningAppProcesses != null) {
-            val packageName = runningAppProcesses.find { it.processName == this.packageName }?.processName
-            if (packageName != null) {
+        val runningTasks = activityManager.getRunningTasks(1)
+        if (runningTasks.isNotEmpty()) {
+            val topActivity = runningTasks[0].topActivity
+            if (topActivity?.packageName != packageName) {
                 val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
                 launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 startActivity(launchIntent)

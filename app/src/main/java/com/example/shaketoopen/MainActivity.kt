@@ -282,7 +282,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     // Method to launch XCTrack
-    fun launchXCTrack() {
+    fun launchXCTrack(view: View) {
+        launchXCTrack()
+    }
+
+    // Overloaded method to launch XCTrack programmatically
+    private fun launchXCTrack() {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
