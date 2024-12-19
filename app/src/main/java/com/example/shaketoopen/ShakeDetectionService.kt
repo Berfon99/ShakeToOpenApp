@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
-import android.view.View
 import androidx.core.app.NotificationCompat
 import kotlin.math.sqrt
 
@@ -34,7 +33,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
 
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
         wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
@@ -100,7 +99,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
                         // Bring the app to the foreground if it is not already
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
-                        launchXCTrack(null)
+                        launchXCTrack()
                     }
                 }
             }
@@ -124,10 +123,10 @@ class ShakeDetectionService : Service(), SensorEventListener {
 
     private fun bringAppToForeground() {
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val runningTasks = activityManager.getRunningTasks(1)
-        if (runningTasks.isNotEmpty()) {
-            val topActivity = runningTasks[0].topActivity
-            if (topActivity?.packageName != packageName) {
+        val runningAppProcesses = activityManager.runningAppProcesses
+        if (runningAppProcesses != null) {
+            val packageName = runningAppProcesses.find { it.processName == this.packageName }?.processName
+            if (packageName != null) {
                 val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
                 launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 startActivity(launchIntent)
@@ -135,7 +134,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
         }
     }
 
-    private fun launchXCTrack(view: View?) {
+    private fun launchXCTrack() {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 

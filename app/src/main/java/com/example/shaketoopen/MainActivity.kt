@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         initializeUI()
         acquireWakeLock()
 
-        // Démarrer le service en avant-plan
+        // Start the foreground service
         val intent = Intent(this, ShakeDetectionService::class.java)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             startForegroundService(intent)
@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun acquireWakeLock() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
         wakeLock.acquire(inactivityTimeout) // Acquire the wake lock with a timeout
@@ -214,7 +214,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         // Bring the app to the foreground if it is not already
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
-                        launchXCTrack(null)
+                        launchXCTrack()
                     }
                 }
             }
@@ -281,7 +281,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     // Method to launch XCTrack
-    fun launchXCTrack(view: View?) {
+    fun launchXCTrack() {
         val packageManager = packageManager
         val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
 
