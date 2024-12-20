@@ -1,20 +1,24 @@
 package com.example.shaketoopen
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.net.Uri
 import android.os.Build
-import android.os.PowerManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -23,9 +27,10 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import kotlin.math.sqrt
-import java.util.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -54,21 +59,37 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initializeViewModel()
-        initializeSensors()
-        initializeUI()
-        acquireWakeLock()
-
-        // Start the foreground service
-        val intent = Intent(this, ShakeDetectionService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
+        // Check and request location permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE)
         } else {
-            startService(intent)
+            initializeViewModel()
+            initializeSensors()
+            initializeUI()
+            acquireWakeLock()
+
+            // Start the foreground service
+            val intent = Intent(this, ShakeDetectionService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
         }
     }
 
@@ -325,5 +346,38 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // Method to release the wake lock
     private fun releaseWakeLock() {
         handler.postDelayed(releaseWakeLockRunnable, 5000) // Release the wake lock after 5 seconds
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Permission granted, proceed with initialization
+                initializeViewModel()
+                initializeSensors()
+                initializeUI()
+                acquireWakeLock()
+
+                // Start the foreground service
+                val intent = Intent(this, ShakeDetectionService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            } else {
+                // Permission denied, show a message and open the app settings
+                Toast.makeText(this, "Location permission is required to use this app", Toast.LENGTH_SHORT).show()
+                openAppSettings()
+            }
+        }
+    }
+
+    // Method to open the app settings
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
     }
 }
