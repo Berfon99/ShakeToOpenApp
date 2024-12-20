@@ -119,8 +119,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
-        wakeLock.acquire(inactivityTimeout) // Acquire the wake lock with a timeout
-        handler.postDelayed(releaseWakeLockRunnable, inactivityTimeout)
     }
 
     private fun setupSliders() {
@@ -217,6 +215,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
                         launchXCTrack()
+                        // Release the wake lock after launching XCTrack
+                        releaseWakeLock()
                     }
                 }
             }
@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!powerManager.isInteractive) {
             wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
-            window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
     }
 
@@ -320,5 +320,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         } else {
             Toast.makeText(this, "XCTrack not installed", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Method to release the wake lock
+    private fun releaseWakeLock() {
+        handler.postDelayed(releaseWakeLockRunnable, 5000) // Release the wake lock after 5 seconds
     }
 }

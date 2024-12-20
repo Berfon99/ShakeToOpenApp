@@ -11,7 +11,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -23,6 +25,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var wakeLock: PowerManager.WakeLock
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate() {
         super.onCreate()
@@ -36,7 +39,6 @@ class ShakeDetectionService : Service(), SensorEventListener {
             PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
-        wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -100,6 +102,8 @@ class ShakeDetectionService : Service(), SensorEventListener {
                         bringAppToForeground()
                         // Launch XCTrack after the screen is turned on
                         launchXCTrack()
+                        // Release the wake lock after launching XCTrack
+                        releaseWakeLock()
                     }
                 }
             }
@@ -154,5 +158,14 @@ class ShakeDetectionService : Service(), SensorEventListener {
                 Log.e("ShakeDetectionService", "Failed to launch XCTrack", e)
             }
         }
+    }
+
+    // Method to release the wake lock
+    private fun releaseWakeLock() {
+        handler.postDelayed({
+            if (wakeLock.isHeld) {
+                wakeLock.release()
+            }
+        }, 5000) // Release the wake lock after 5 seconds
     }
 }
