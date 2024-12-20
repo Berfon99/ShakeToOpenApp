@@ -33,7 +33,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
 
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
         wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
