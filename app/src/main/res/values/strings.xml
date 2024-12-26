@@ -12,7 +12,7 @@
     <string name="go_text">GO</string>
     <string name="toggle_detection_button_text">Start Detection</string>
     <string name="reset_button_text">Reset</string>
-    <string name="close_button_text">Close application</string>
+    <string name="close_button_text">Close app</string>
     <string name="two_shakes_detected">Two shakes detected!</string>
     <string name="stop_detection">Stop Detection</string>
     <string name="start_detection">Start Detection</string>
