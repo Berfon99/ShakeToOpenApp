@@ -1,3 +1,4 @@
+//ShakeDetectionService.kt
 package com.example.shaketoopen
 
 import android.app.ActivityManager

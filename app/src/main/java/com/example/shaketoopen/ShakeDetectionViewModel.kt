@@ -1,3 +1,4 @@
+//ShakeDetectionViewModel.kt
 package com.example.shaketoopen
 
 import androidx.lifecycle.ViewModel
