@@ -279,10 +279,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!powerManager.isInteractive) {
             wakeLock.acquire(1 * 60 * 1000L /* 1 minute */) // Garder l'écran allumé pendant 1 minute
-            // Ajoutez la flag pour montrer l'écran même si l'appareil est verrouillé
-            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // Garder l'écran allumé
+            this@MainActivity.setShowWhenLocked(true) // Afficher la fenêtre même si l'écran est verrouillé
         }
     }
+
+
 
 
     // Method to bring the app to the foreground
