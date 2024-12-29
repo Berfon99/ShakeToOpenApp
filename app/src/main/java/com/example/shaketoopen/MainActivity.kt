@@ -2,8 +2,6 @@
 package com.example.shaketoopen
 
 import android.Manifest
-import android.app.ActivityManager
-import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -14,7 +12,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -86,11 +83,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             // Start the foreground service
             val intent = Intent(this, ShakeDetectionService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
-            }
+            startForegroundService(intent)
         }
     }
 
@@ -361,11 +354,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                 // Start the foreground service
                 val intent = Intent(this, ShakeDetectionService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
+                startForegroundService(intent)
             } else {
                 // Permission denied, show a message and open the app settings
                 Toast.makeText(this, "Location permission is required to use this app", Toast.LENGTH_SHORT).show()
