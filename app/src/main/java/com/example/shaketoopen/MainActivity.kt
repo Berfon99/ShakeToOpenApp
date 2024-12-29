@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var wakeLock: PowerManager.WakeLock
     private val handler = Handler(Looper.getMainLooper())
-    private val inactivityTimeout: Long = 10000 // 10 seconds of inactivity
 
     private val releaseWakeLockRunnable = Runnable {
         if (wakeLock.isHeld) {
@@ -89,7 +88,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
-        // Set default values
         viewModel.shakeThreshold = 22.5f // Default sensitivity value corresponding to "Sensitivity 3"
         viewModel.shakeTimeWindow = 500L // Default minimum time value
         viewModel.shakeTimeMax = 2000L // Default maximum time value
