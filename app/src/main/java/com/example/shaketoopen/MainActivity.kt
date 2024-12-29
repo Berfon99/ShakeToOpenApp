@@ -271,7 +271,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun turnOnScreen() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!powerManager.isInteractive) {
-            wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
+            wakeLock.acquire(1 * 60 * 1000L /*10 minutes*/)
             window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
     }

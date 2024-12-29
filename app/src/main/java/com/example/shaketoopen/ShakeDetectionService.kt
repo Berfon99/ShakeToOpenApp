@@ -11,7 +11,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -41,15 +40,14 @@ class ShakeDetectionService : Service(), SensorEventListener {
             "ShakeToOpen::WakeLock"
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "shake_detection_channel",
-                "Shake Detection",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val manager = getSystemService(NotificationManager::class.java) as NotificationManager
-            manager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            "shake_detection_channel",
+            "Shake Detection",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java) as NotificationManager
+        manager.createNotificationChannel(channel)
+
 
         val notification: Notification = NotificationCompat.Builder(this, "shake_detection_channel")
             .setContentTitle("Shake Detection")
@@ -128,9 +126,9 @@ class ShakeDetectionService : Service(), SensorEventListener {
 
     private fun bringAppToForeground() {
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val runningTasks = activityManager.getRunningTasks(1)
-        if (runningTasks.isNotEmpty()) {
-            val topActivity = runningTasks[0].topActivity
+        val appTasks = activityManager.appTasks
+        if (appTasks.isNotEmpty()) {
+            val topActivity = appTasks[0].taskInfo.topActivity
             if (topActivity?.packageName != packageName) {
                 val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
                 launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
@@ -138,6 +136,7 @@ class ShakeDetectionService : Service(), SensorEventListener {
             }
         }
     }
+
 
     private fun launchXCTrack() {
         val packageManager = packageManager
