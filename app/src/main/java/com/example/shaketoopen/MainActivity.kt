@@ -245,14 +245,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    override fun onDestroy() {
-        super.onDestroy()
-        sensorManager.unregisterListener(this)
-        handler.removeCallbacks(releaseWakeLockRunnable)
+    override fun onPause() {
+        super.onPause()
+        // Libérer le WakeLock lorsque l'activité passe en pause
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
+        handler.removeCallbacks(releaseWakeLockRunnable) // Supprimer les callbacks liés à la libération du WakeLock
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Ne libérez pas le WakeLock ici
+        sensorManager.unregisterListener(this)
+    }
+
 
     fun toggleShakeToXCTrack(view: View) {
         viewModel.shakeToXCTrackEnabled = !viewModel.shakeToXCTrackEnabled
@@ -271,7 +278,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun turnOnScreen() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         if (!powerManager.isInteractive) {
-            wakeLock.acquire(1 * 60 * 1000L /*10 minutes*/)
+            wakeLock.acquire(1 * 60 * 1000L /*1 minute*/)
             window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
     }
