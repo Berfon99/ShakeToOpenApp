@@ -35,10 +35,12 @@ class ShakeDetectionService : Service(), SensorEventListener {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
 
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+// Changement des constantes obsolètes
         wakeLock = powerManager.newWakeLock(
-            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "ShakeToOpen::WakeLock"
         )
+
 
         val channel = NotificationChannel(
             "shake_detection_channel",
