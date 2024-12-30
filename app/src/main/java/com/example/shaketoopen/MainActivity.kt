@@ -81,35 +81,73 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         registerReceiver(xcTrackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
 
         // Check and request location permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE)
-        } else {
-            initializeViewModel()
-            initializeSensors()
-            initializeUI()
-            acquireWakeLock()
+        checkAndRequestPermissions()
 
-            // Start the foreground service
-            val intent = Intent(this, ShakeDetectionService::class.java)
-            startForegroundService(intent)
+        // Start the foreground service
+        val intent = Intent(this, ShakeDetectionService::class.java)
+        startForegroundService(intent)
 
-            // Set OnClickListener for the "Launch XCTrack" button
-            val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
-            launchXCTrackButton.setOnClickListener {
-                launchXCTrack()  // Call your existing method
+        // Set OnClickListener for the "Launch XCTrack" button
+        val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
+        launchXCTrackButton.setOnClickListener {
+        launchXCTrack()  // Call your existing method
             }
         }
+
+private fun checkAndRequestPermissions() {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        != PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+        != PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        != PackageManager.PERMISSION_GRANTED
+    ) {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ),
+            LOCATION_PERMISSION_REQUEST_CODE
+        )
+    } else {
+        initializeApp()
     }
+}
+
+private fun initializeApp() {
+    initializeViewModel()
+    initializeSensors()
+    initializeUI()
+    acquireWakeLock()
+
+    // Start the foreground service
+    val intent = Intent(this, ShakeDetectionService::class.java)
+    startForegroundService(intent)
+
+    // Set OnClickListener for the "Launch XCTrack" button
+    val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
+    launchXCTrackButton.setOnClickListener {
+        launchXCTrack()  // Call your existing method
+    }
+}
+
+override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            initializeApp()
+        } else {
+            // Handle the case where permissions are denied
+            Toast.makeText(this, "Location permissions are required to use this app", Toast.LENGTH_LONG).show()
+            finish()
+        }
+    }
+}
 
 
-    private fun initializeViewModel() {
+private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
         viewModel.shakeThreshold = 22.5f // Default sensitivity value corresponding to "Sensitivity 3"
         viewModel.shakeTimeWindow = 500L // Default minimum time value
