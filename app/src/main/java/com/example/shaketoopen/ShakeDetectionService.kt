@@ -71,7 +71,7 @@ class ShakeDetectionService : Service(), SensorEventListener, ViewModelStoreOwne
 
             if (magnitude > viewModel.shakeThreshold) {
                 handleShake(currentTime)
-            } else if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeMax) {
+            } else if (viewModel.shakeCount > 0 && currentTime - viewModel.firstShakeTime > viewModel.shakeTimeMax) { // Modified line
                 resetShakeDetection()
             }
             viewModel.lastTime = currentTime
