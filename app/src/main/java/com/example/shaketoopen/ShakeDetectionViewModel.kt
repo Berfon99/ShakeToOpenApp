@@ -11,6 +11,6 @@ class ShakeDetectionViewModel : ViewModel() {
     var firstShakeTime: Long = 0
     var lastTime: Long = 0
     var goCircleGreen: Boolean = false
-    var shakeToXCTrackEnabled: Boolean = false
+    var shakeToXCTrackEnabled: Boolean = true
     var detectionEnabled: Boolean = true
 }

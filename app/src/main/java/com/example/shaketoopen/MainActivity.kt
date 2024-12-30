@@ -32,7 +32,6 @@ import kotlin.math.sqrt
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 
-
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
@@ -177,14 +176,28 @@ private fun initializeViewModel() {
         closeButton = findViewById(R.id.close_button)
 
         // Set default values in UI
-        sensitivitySlider.progress = 2 // Default sensitivity slider position corresponding to "Sensitivity 3"
-        sensitivityValue.text = getString(R.string.sensitivity_level, 3) // Default sensitivity value
-        timeValue.text = getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0) // Default minimum time value
-        timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0) // Default maximum time value
+        sensitivitySlider.progress =
+            2 // Default sensitivity slider position corresponding to "Sensitivity 3"
+        sensitivityValue.text =
+            getString(R.string.sensitivity_level, 3) // Default sensitivity value
+        timeValue.text = getString(
+            R.string.time_delay,
+            viewModel.shakeTimeWindow / 1000.0
+        ) // Default minimum time value
+        timeMaxValue.text = getString(
+            R.string.time_max_delay,
+            viewModel.shakeTimeMax / 1000.0
+        ) // Default maximum time value
         timeMaxSlider.progress = 2 // Default maximum time slider position corresponding to 2.0 s
 
         setupSliders()
-        updateStatusText()
+        statusText.text = getString(R.string.status_waiting)
+        statusText.setBackgroundColor(Color.RED)
+        toggleShakeToXCTrackButton.text = if (viewModel.shakeToXCTrackEnabled) {
+            getString(R.string.disable_shake_to_xctrack)
+        } else {
+            getString(R.string.enable_shake_to_xctrack)
+        }
     }
 
     private fun acquireWakeLock() {
