@@ -1,4 +1,3 @@
-//MainActivity.kt
 package com.example.shaketoopen
 
 import android.Manifest
@@ -29,6 +28,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import kotlin.math.sqrt
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -47,6 +49,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var toggleShakeToXCTrackButton: Button
     private lateinit var closeButton: Button
 
+    private val xcTrackReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Wake up the screen
+            turnOnScreen()
+            // Launch XCTrack
+            launchXCTrack()
+        }
+    }
+
     private lateinit var wakeLock: PowerManager.WakeLock
     private val handler = Handler(Looper.getMainLooper())
 
@@ -63,6 +74,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Register the receiver to listen for the broadcast
+        val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
+        registerReceiver(xcTrackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
 
         // Check and request location permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -83,8 +98,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Start the foreground service
             val intent = Intent(this, ShakeDetectionService::class.java)
             startForegroundService(intent)
+
+            // Set OnClickListener for the "Launch XCTrack" button
+            val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
+            launchXCTrackButton.setOnClickListener {
+                launchXCTrack()  // Call your existing method
+            }
         }
     }
+
 
     private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
@@ -129,9 +151,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun acquireWakeLock() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
             "ShakeToOpen::WakeLock"
         )
+
     }
 
     private fun setupSliders() {
@@ -220,15 +243,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     viewModel.goCircleGreen = true
                     statusText.text = getString(R.string.two_shakes_detected)
                     if (viewModel.shakeToXCTrackEnabled) {
-                        // Acquire the wake lock to turn on the screen
                         acquireWakeLock()
-                        // Turn on the screen
                         turnOnScreen()
-                        // Bring the app to the foreground if it is not already
                         bringAppToForeground()
-                        // Launch XCTrack after the screen is turned on
                         launchXCTrack()
-                        // Release the wake lock after launching XCTrack
                         releaseWakeLock()
                     }
                 }
@@ -247,19 +265,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onPause() {
         super.onPause()
-        // Libérer le WakeLock lorsque l'activité passe en pause
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        handler.removeCallbacks(releaseWakeLockRunnable) // Supprimer les callbacks liés à la libération du WakeLock
+        handler.removeCallbacks(releaseWakeLockRunnable)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Ne libérez pas le WakeLock ici
         sensorManager.unregisterListener(this)
+        // Unregister the receiver when the activity is destroyed
+        unregisterReceiver(xcTrackReceiver)
     }
-
 
     fun toggleShakeToXCTrack(view: View) {
         viewModel.shakeToXCTrackEnabled = !viewModel.shakeToXCTrackEnabled
@@ -274,109 +291,47 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         finish()
     }
 
-    // Method to turn on the screen
+    // Function to turn on the screen if it's off
     private fun turnOnScreen() {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        if (!powerManager.isInteractive) {
-            wakeLock.acquire(1 * 60 * 1000L /* 1 minute */) // Garder l'écran allumé pendant 1 minute
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // Garder l'écran allumé
-            this@MainActivity.setShowWhenLocked(true) // Afficher la fenêtre même si l'écran est verrouillé
-        }
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "ShakeToOpen::WakeLock"
+        )
+        wakeLock.acquire(5000) // Hold the screen on for 5 seconds
     }
 
 
+    private fun releaseWakeLock() {
+        handler.postDelayed(releaseWakeLockRunnable, 5000)
+    }
 
-
-    // Method to bring the app to the foreground
     private fun bringAppToForeground() {
         val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val endTime = System.currentTimeMillis()
-        val beginTime = endTime - 10000 // 10 seconds ago
-        val usageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
-        var isForeground = false
-        for (usageStat in usageStats) {
-            if (usageStat.packageName == packageName && usageStat.lastTimeUsed >= beginTime) {
-                isForeground = true
-                break
+        val beginTime = endTime - 1000 * 60
+        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
+        if (stats != null && stats.isNotEmpty()) {
+            val lastUsedApp = stats.maxByOrNull { it.lastTimeUsed }
+            lastUsedApp?.let {
+                val launchIntent = packageManager.getLaunchIntentForPackage(it.packageName)
+                launchIntent?.let { intent -> startActivity(intent) }
             }
         }
-        if (!isForeground) {
-            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-            launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            startActivity(launchIntent)
-        }
     }
 
-    // Method to launch XCTrack
-    fun launchXCTrack(view: View) {
-        launchXCTrack()
-    }
-
-    // Overloaded method to launch XCTrack programmatically
     private fun launchXCTrack() {
-        val packageManager = packageManager
-        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
-
-        if (launchIntent != null) {
-            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-            val endTime = System.currentTimeMillis()
-            val beginTime = endTime - 10000 // 10 seconds ago
-            val usageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
-            var isXCTrackRunning = false
-            for (usageStat in usageStats) {
-                if (usageStat.packageName == "org.xcontest.XCTrack" && usageStat.lastTimeUsed >= beginTime) {
-                    isXCTrackRunning = true
-                    break
-                }
+        try {
+            val intent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack") ?: run {
+                val uri = Uri.parse("market://details?id=org.xcontest.XCTrack")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                return
             }
-
-            if (isXCTrackRunning) {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            } else {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            try {
-                startActivity(launchIntent)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to launch XCTrack", e)
-                Toast.makeText(this, "Failed to launch XCTrack", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(this, "XCTrack not installed", Toast.LENGTH_SHORT).show()
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Unable to launch XCTrack: ${e.message}", Toast.LENGTH_LONG).show()
         }
-    }
-
-    // Method to release the wake lock
-    private fun releaseWakeLock() {
-        handler.postDelayed(releaseWakeLockRunnable, 5000) // Release the wake lock after 5 seconds
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Permission granted, proceed with initialization
-                initializeViewModel()
-                initializeSensors()
-                initializeUI()
-                acquireWakeLock()
-
-                // Start the foreground service
-                val intent = Intent(this, ShakeDetectionService::class.java)
-                startForegroundService(intent)
-            } else {
-                // Permission denied, show a message and open the app settings
-                Toast.makeText(this, "Location permission is required to use this app", Toast.LENGTH_SHORT).show()
-                openAppSettings()
-            }
-        }
-    }
-
-    // Method to open the app settings
-    private fun openAppSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
     }
 }

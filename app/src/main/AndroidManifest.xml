@@ -35,5 +35,14 @@
             android:name=".ShakeDetectionService"
             android:exported="false"
             android:foregroundServiceType="location"/>
+
+        <!-- Declare the BroadcastReceiver to handle the launch intent -->
+        <receiver android:name=".XcTrackReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.shaketoopen.LAUNCH_XCTRACK" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>

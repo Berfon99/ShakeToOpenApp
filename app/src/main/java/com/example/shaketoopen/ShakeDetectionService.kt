@@ -1,4 +1,4 @@
-//ShakeDetectionService.kt
+// ShakeDetectionService.kt
 package com.example.shaketoopen
 
 import android.app.ActivityManager
@@ -6,14 +6,13 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -25,7 +24,6 @@ class ShakeDetectionService : Service(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var wakeLock: PowerManager.WakeLock
-    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate() {
         super.onCreate()
@@ -35,12 +33,10 @@ class ShakeDetectionService : Service(), SensorEventListener {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
 
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-// Changement des constantes obsolètes
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            PowerManager.PARTIAL_WAKE_LOCK,
             "ShakeToOpen::WakeLock"
         )
-
 
         val channel = NotificationChannel(
             "shake_detection_channel",
@@ -49,7 +45,6 @@ class ShakeDetectionService : Service(), SensorEventListener {
         )
         val manager = getSystemService(NotificationManager::class.java) as NotificationManager
         manager.createNotificationChannel(channel)
-
 
         val notification: Notification = NotificationCompat.Builder(this, "shake_detection_channel")
             .setContentTitle("Shake Detection")
@@ -93,23 +88,35 @@ class ShakeDetectionService : Service(), SensorEventListener {
                 viewModel.firstShakeTime = currentTime
             }
             1 -> {
-                if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeWindow && currentTime - viewModel.firstShakeTime < viewModel.shakeTimeMax) {
+                if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeWindow &&
+                    currentTime - viewModel.firstShakeTime < viewModel.shakeTimeMax) {
                     viewModel.shakeCount = 2
                     viewModel.goCircleGreen = true
                     if (viewModel.shakeToXCTrackEnabled) {
-                        // Acquire the wake lock to turn on the screen
-                        wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/)
-                        // Bring the app to the foreground if it is not already
-                        bringAppToForeground()
-                        // Launch XCTrack after the screen is turned on
-                        launchXCTrack()
-                        // Release the wake lock after launching XCTrack
-                        releaseWakeLock()
+                        wakeUpScreen()
+                        sendLaunchBroadcast()
                     }
                 }
             }
         }
     }
+
+    private fun wakeUpScreen() {
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "ShakeToOpen::WakeLock"
+        )
+        wakeLock.acquire(5000) // Hold for 5 seconds to ensure screen stays on
+    }
+
+    // Send a broadcast to MainActivity to launch XCTrack
+    private fun sendLaunchBroadcast() {
+        val intent = Intent("com.example.shaketoopen.LAUNCH_XCTRACK")
+        intent.setClass(this, XcTrackReceiver::class.java)  // Définir explicitement la classe du récepteur
+        sendBroadcast(intent)
+    }
+
 
     private fun resetShakeDetection() {
         viewModel.shakeCount = 0
@@ -123,19 +130,6 @@ class ShakeDetectionService : Service(), SensorEventListener {
         sensorManager.unregisterListener(this)
         if (wakeLock.isHeld) {
             wakeLock.release()
-        }
-    }
-
-    private fun bringAppToForeground() {
-        val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val appTasks = activityManager.appTasks
-        if (appTasks.isNotEmpty()) {
-            val topActivity = appTasks[0].taskInfo.topActivity
-            if (topActivity?.packageName != packageName) {
-                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-                launchIntent?.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                startActivity(launchIntent)
-            }
         }
     }
 
@@ -160,14 +154,5 @@ class ShakeDetectionService : Service(), SensorEventListener {
                 Log.e("ShakeDetectionService", "Failed to launch XCTrack", e)
             }
         }
-    }
-
-    // Method to release the wake lock
-    private fun releaseWakeLock() {
-        handler.postDelayed({
-            if (wakeLock.isHeld) {
-                wakeLock.release()
-            }
-        }, 5000) // Release the wake lock after 5 seconds
     }
 }
