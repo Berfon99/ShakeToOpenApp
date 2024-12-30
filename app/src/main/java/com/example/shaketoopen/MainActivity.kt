@@ -254,11 +254,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     viewModel.goCircleGreen = true
                     statusText.text = getString(R.string.two_shakes_detected)
                     if (viewModel.shakeToXCTrackEnabled) {
-                        acquireWakeLock()
-                        turnOnScreen()
+                        wakeUpScreen()
                         bringAppToForeground()
                         launchXCTrack()
-                        releaseWakeLock()
                     }
                 }
             }
