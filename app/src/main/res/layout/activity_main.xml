@@ -190,7 +190,6 @@
                 android:layout_weight="1"
                 android:text="@string/launch_xctrack_button_text"
                 android:layout_marginStart="16dp"
-                android:onClick="launchXCTrack"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:backgroundTint="@android:color/holo_orange_light"
                 android:paddingEnd="40dp"
