@@ -117,6 +117,7 @@ private fun checkAndRequestPermissions() {
 
 private fun initializeApp() {
     initializeViewModel()
+    loadSettings()
     initializeSensors()
     initializeUI()
     acquireWakeLock()
@@ -146,11 +147,28 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
 }
 
 
+    private fun saveSettings() {
+        val sharedPreferences = getSharedPreferences("ShakeToOpenSettings", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putFloat("shakeThreshold", viewModel.shakeThreshold)
+        editor.putLong("shakeTimeWindow", viewModel.shakeTimeWindow)
+        editor.putLong("shakeTimeMax", viewModel.shakeTimeMax)
+        editor.putBoolean("shakeToXCTrackEnabled", viewModel.shakeToXCTrackEnabled)
+        editor.apply()
+    }
+
+
+    private fun loadSettings() {
+        val sharedPreferences = getSharedPreferences("ShakeToOpenSettings", MODE_PRIVATE)
+        viewModel.shakeThreshold = sharedPreferences.getFloat("shakeThreshold", 7.5f)
+        viewModel.shakeTimeWindow = sharedPreferences.getLong("shakeTimeWindow", 500L)
+        viewModel.shakeTimeMax = sharedPreferences.getLong("shakeTimeMax", 2000L)
+        viewModel.shakeToXCTrackEnabled =
+            sharedPreferences.getBoolean("shakeToXCTrackEnabled", true)
+    }
+
 private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
-        viewModel.shakeThreshold = 22.5f // Default sensitivity value corresponding to "Sensitivity 3"
-        viewModel.shakeTimeWindow = 500L // Default minimum time value
-        viewModel.shakeTimeMax = 2000L // Default maximum time value
     }
 
     private fun initializeSensors() {
@@ -176,10 +194,6 @@ private fun initializeViewModel() {
         closeButton = findViewById(R.id.close_button)
 
         // Set default values in UI
-        sensitivitySlider.progress =
-            2 // Default sensitivity slider position corresponding to "Sensitivity 3"
-        sensitivityValue.text =
-            getString(R.string.sensitivity_level, 3) // Default sensitivity value
         timeValue.text = getString(
             R.string.time_delay,
             viewModel.shakeTimeWindow / 1000.0
@@ -188,7 +202,6 @@ private fun initializeViewModel() {
             R.string.time_max_delay,
             viewModel.shakeTimeMax / 1000.0
         ) // Default maximum time value
-        timeMaxSlider.progress = 2 // Default maximum time slider position corresponding to 2.0 s
 
         setupSliders()
         statusText.text = getString(R.string.status_waiting)
@@ -198,6 +211,14 @@ private fun initializeViewModel() {
         } else {
             getString(R.string.enable_shake_to_xctrack)
         }
+        closeButton.setOnClickListener {
+            closeApp(it)
+        }
+        sensitivitySlider.progress = ((30f - viewModel.shakeThreshold) / 3.75f).toInt()
+        sensitivityValue.text =
+            getString(R.string.sensitivity_level, sensitivitySlider.progress + 1)
+        timeSlider.progress = ((viewModel.shakeTimeWindow - 200) / 100).toInt()
+        timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
     }
 
     private fun acquireWakeLock() {
@@ -232,7 +253,6 @@ private fun initializeViewModel() {
         })
 
         timeSlider.max = 8
-        timeSlider.progress = 3 // Default minimum time slider position corresponding to 0.5 s
         timeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 viewModel.shakeTimeWindow = (200 + progress * 100).toLong()
@@ -240,7 +260,8 @@ private fun initializeViewModel() {
                 if (viewModel.shakeTimeWindow > viewModel.shakeTimeMax) {
                     viewModel.shakeTimeWindow = viewModel.shakeTimeMax
                     timeSlider.progress = ((viewModel.shakeTimeMax - 200) / 100).toInt()
-                    timeValue.text = getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0)
+                    timeValue.text =
+                        getString(R.string.time_delay, viewModel.shakeTimeWindow / 1000.0)
                 }
             }
 
@@ -249,15 +270,16 @@ private fun initializeViewModel() {
         })
 
         timeMaxSlider.max = 5
-        timeMaxSlider.progress = 2 // Default maximum time slider position corresponding to 2.0 s
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 viewModel.shakeTimeMax = (500 + progress * 500).toLong()
-                timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
+                timeMaxValue.text =
+                    getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
                 if (viewModel.shakeTimeMax < viewModel.shakeTimeWindow) {
                     viewModel.shakeTimeMax = viewModel.shakeTimeWindow
                     timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
-                    timeMaxValue.text = getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
+                    timeMaxValue.text =
+                        getString(R.string.time_max_delay, viewModel.shakeTimeMax / 1000.0)
                 }
             }
 
@@ -329,6 +351,7 @@ private fun initializeViewModel() {
             wakeLock.release()
         }
         handler.removeCallbacks(releaseWakeLockRunnable)
+        saveSettings()
     }
 
     override fun onDestroy() {
