@@ -316,17 +316,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun bringAppToForeground() {
-        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val endTime = System.currentTimeMillis()
-        val beginTime = endTime - 1000 * 60
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime)
-        if (stats != null && stats.isNotEmpty()) {
-            val lastUsedApp = stats.maxByOrNull { it.lastTimeUsed }
-            lastUsedApp?.let {
-                val launchIntent = packageManager.getLaunchIntentForPackage(it.packageName)
-                launchIntent?.let { intent -> startActivity(intent) }
-            }
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
         }
+        startActivity(intent)
     }
 
     private fun launchXCTrack() {
