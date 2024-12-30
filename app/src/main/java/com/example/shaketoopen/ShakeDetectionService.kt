@@ -1,10 +1,9 @@
-// ShakeDetectionService.kt
 package com.example.shaketoopen
 
-import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -12,23 +11,34 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import kotlin.math.sqrt
+import com.example.shaketoopen.ShakeDetectionViewModel // This import was missing!
 
-class ShakeDetectionService : Service(), SensorEventListener {
+class ShakeDetectionService : Service(), SensorEventListener, ViewModelStoreOwner {
 
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var wakeLock: PowerManager.WakeLock
+    override val viewModelStore: ViewModelStore = ViewModelStore()
+
+    companion object {
+        private const val CHANNEL_ID = "ShakeDetectionChannel"
+        private const val NOTIFICATION_ID = 1
+    }
 
     override fun onCreate() {
         super.onCreate()
-        viewModel = ShakeDetectionViewModel()
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application)).get(ShakeDetectionViewModel::class.java)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
 
@@ -38,21 +48,8 @@ class ShakeDetectionService : Service(), SensorEventListener {
             "ShakeToOpen::WakeLock"
         )
 
-        val channel = NotificationChannel(
-            "shake_detection_channel",
-            "Shake Detection",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val manager = getSystemService(NotificationManager::class.java) as NotificationManager
-        manager.createNotificationChannel(channel)
-
-        val notification: Notification = NotificationCompat.Builder(this, "shake_detection_channel")
-            .setContentTitle("Shake Detection")
-            .setContentText("Shake detection is running")
-            .setSmallIcon(R.drawable.ic_notification)
-            .build()
-
-        startForeground(1, notification)
+        createNotificationChannel()
+        startForegroundService()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -113,7 +110,6 @@ class ShakeDetectionService : Service(), SensorEventListener {
     // Send a broadcast to MainActivity to launch XCTrack
     private fun sendLaunchBroadcast() {
         val intent = Intent("com.example.shaketoopen.LAUNCH_XCTRACK")
-        intent.setClass(this, XcTrackReceiver::class.java)  // Définir explicitement la classe du récepteur
         sendBroadcast(intent)
     }
 
@@ -133,26 +129,34 @@ class ShakeDetectionService : Service(), SensorEventListener {
         }
     }
 
-
-    private fun launchXCTrack() {
-        val packageManager = packageManager
-        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
-
-        if (launchIntent != null) {
-            val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            val runningAppProcesses = activityManager.runningAppProcesses
-            val isXCTrackRunning = runningAppProcesses.any { it.processName == "org.xcontest.XCTrack" }
-
-            if (isXCTrackRunning) {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            } else {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            try {
-                startActivity(launchIntent)
-            } catch (e: Exception) {
-                Log.e("ShakeDetectionService", "Failed to launch XCTrack", e)
-            }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val serviceChannel = NotificationChannel(
+                CHANNEL_ID,
+                "Shake Detection Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(serviceChannel)
         }
+    }
+
+    private fun startForegroundService() {
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Shake Detection Service")
+            .setContentText("Detecting shakes...")
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        startForeground(NOTIFICATION_ID, notification)
     }
 }

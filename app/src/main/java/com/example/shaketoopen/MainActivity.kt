@@ -1,5 +1,6 @@
 package com.example.shaketoopen
 
+import com.example.shaketoopen.ShakeDetectionService
 import android.Manifest
 import android.app.usage.UsageStatsManager
 import android.content.Context
