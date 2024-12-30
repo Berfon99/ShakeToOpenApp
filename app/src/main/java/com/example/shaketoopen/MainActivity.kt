@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private val xcTrackReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Wake up the screen
-            turnOnScreen()
+            wakeUpScreen()
             // Launch XCTrack
             launchXCTrack()
         }
@@ -156,6 +156,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             "ShakeToOpen::WakeLock"
         )
 
+    }
+
+
+    private fun wakeUpScreen() {
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "ShakeToOpen::WakeLock"
+        )
+        wakeLock.acquire(5000) // Hold for 5 seconds to ensure screen stays on
     }
 
     private fun setupSliders() {
@@ -322,17 +332,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun launchXCTrack() {
-        try {
-            val intent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack") ?: run {
-                val uri = Uri.parse("market://details?id=org.xcontest.XCTrack")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-                return
-            }
-            startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Unable to launch XCTrack: ${e.message}", Toast.LENGTH_LONG).show()
+        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
+        if (launchIntent != null) {
+            startActivity(launchIntent)
+        } else {
+            // XCTrack is not installed, open the Play Store
+            val playStoreIntent = Intent(Intent.ACTION_VIEW)
+            playStoreIntent.data = Uri.parse("market://details?id=org.xcontest.XCTrack")
+            startActivity(playStoreIntent)
         }
     }
 }

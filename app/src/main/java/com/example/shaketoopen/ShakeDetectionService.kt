@@ -90,7 +90,6 @@ class ShakeDetectionService : Service(), SensorEventListener, ViewModelStoreOwne
                     viewModel.shakeCount = 2
                     viewModel.goCircleGreen = true
                     if (viewModel.shakeToXCTrackEnabled) {
-                        wakeUpScreen()
                         sendLaunchBroadcast()
                     }
                 }
@@ -98,14 +97,6 @@ class ShakeDetectionService : Service(), SensorEventListener, ViewModelStoreOwne
         }
     }
 
-    private fun wakeUpScreen() {
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        val wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "ShakeToOpen::WakeLock"
-        )
-        wakeLock.acquire(5000) // Hold for 5 seconds to ensure screen stays on
-    }
 
     // Send a broadcast to MainActivity to launch XCTrack
     private fun sendLaunchBroadcast() {
