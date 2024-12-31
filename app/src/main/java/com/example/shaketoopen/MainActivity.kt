@@ -1,3 +1,4 @@
+//MainActivity.kt
 package com.example.shaketoopen
 
 import com.example.shaketoopen.ShakeDetectionService
