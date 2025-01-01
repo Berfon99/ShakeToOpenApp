@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var settingsManager: SettingsManager
+    private lateinit var wakeLockManager: WakeLockManager
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
@@ -50,23 +51,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var toggleShakeToXCTrackButton: Button
     private lateinit var closeButton: Button
 
+
     private val xcTrackReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Wake up the screen
-            wakeUpScreen()
+            wakeLockManager.wakeUpScreen()
             // Launch XCTrack
             launchXCTrack()
         }
     }
 
-    private lateinit var wakeLock: PowerManager.WakeLock
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val releaseWakeLockRunnable = Runnable {
-        if (wakeLock.isHeld) {
-            wakeLock.release()
-        }
-    }
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -75,6 +69,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize managers
+        viewModel = ViewModelProvider(this)[ShakeDetectionViewModel::class.java]
+        settingsManager = SettingsManager(this, viewModel)
+        wakeLockManager = WakeLockManager(this)
 
         // Register the receiver to listen for the broadcast
         val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
@@ -119,11 +118,10 @@ private fun checkAndRequestPermissions() {
 
 private fun initializeApp() {
     initializeViewModel()
-    settingsManager = SettingsManager(this, viewModel)
     settingsManager.loadSettings()
     initializeSensors()
     initializeUI()
-    acquireWakeLock()
+    wakeLockManager.acquireWakeLock()
 
     // Start the foreground service
     val intent = Intent(this, ShakeDetectionService::class.java)
@@ -205,24 +203,6 @@ private fun initializeViewModel() {
         timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
     }
 
-    private fun acquireWakeLock() {
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "ShakeToOpen::WakeLock"
-        )
-
-    }
-
-
-    private fun wakeUpScreen() {
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        val wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "ShakeToOpen::WakeLock"
-        )
-        wakeLock.acquire(5000) // Hold for 5 seconds to ensure screen stays on
-    }
 
     private fun setupSliders() {
         sensitivitySlider.max = 4
@@ -311,7 +291,7 @@ private fun initializeViewModel() {
                     viewModel.goCircleGreen = true
                     statusText.text = getString(R.string.two_shakes_detected)
                     if (viewModel.shakeToXCTrackEnabled) {
-                        wakeUpScreen()
+                        wakeLockManager.wakeUpScreen()
                         bringAppToForeground()
                         launchXCTrack()
                     }
@@ -331,10 +311,7 @@ private fun initializeViewModel() {
 
     override fun onPause() {
         super.onPause()
-        if (wakeLock.isHeld) {
-            wakeLock.release()
-        }
-        handler.removeCallbacks(releaseWakeLockRunnable)
+        wakeLockManager.releaseWakeLock()
         settingsManager.saveSettings()
     }
 
@@ -358,20 +335,7 @@ private fun initializeViewModel() {
         finish()
     }
 
-    // Function to turn on the screen if it's off
-    private fun turnOnScreen() {
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        val wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "ShakeToOpen::WakeLock"
-        )
-        wakeLock.acquire(5000) // Hold the screen on for 5 seconds
-    }
 
-
-    private fun releaseWakeLock() {
-        handler.postDelayed(releaseWakeLockRunnable, 5000)
-    }
 
     private fun bringAppToForeground() {
         val intent = Intent(this, MainActivity::class.java).apply {
