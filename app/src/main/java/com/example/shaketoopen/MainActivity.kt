@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var settingsManager: SettingsManager
     private lateinit var wakeLockManager: WakeLockManager
     private lateinit var xcTrackLauncher: XCTrackLauncher
+    private lateinit var permissionManager: PermissionManager
+
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
@@ -62,11 +64,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -76,13 +73,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         settingsManager = SettingsManager(this, viewModel)
         wakeLockManager = WakeLockManager(this)
         xcTrackLauncher = XCTrackLauncher(this)
+        permissionManager = PermissionManager(this)
 
         // Register the receiver to listen for the broadcast
         val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
         registerReceiver(xcTrackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
 
         // Check and request location permissions
-        checkAndRequestPermissions()
+        permissionManager.checkAndRequestPermissions {
+            initializeApp()
+        }
 
         // Start the foreground service
         val intent = Intent(this, ShakeDetectionService::class.java)
@@ -96,48 +96,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
-private fun checkAndRequestPermissions() {
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-        != PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-        != PackageManager.PERMISSION_GRANTED ||
-        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        != PackageManager.PERMISSION_GRANTED
-    ) {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ),
-            LOCATION_PERMISSION_REQUEST_CODE
-        )
-    } else {
-        initializeApp()
-    }
-}
-
     private fun initializeApp() {
         settingsManager.loadSettings()
         initializeSensors()
         initializeUI()
         wakeLockManager.acquireWakeLock()
     }
-
-override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            initializeApp()
-        } else {
-            // Handle the case where permissions are denied
-            Toast.makeText(this, "Location permissions are required to use this app", Toast.LENGTH_LONG).show()
-            finish()
-        }
-    }
-}
-
 
 private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
