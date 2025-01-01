@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var settingsManager: SettingsManager
     private lateinit var wakeLockManager: WakeLockManager
+    private lateinit var xcTrackLauncher: XCTrackLauncher
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Wake up the screen
             wakeLockManager.wakeUpScreen()
             // Launch XCTrack
-            launchXCTrack()
+            xcTrackLauncher.launchXCTrack()
         }
     }
 
@@ -74,6 +75,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         viewModel = ViewModelProvider(this)[ShakeDetectionViewModel::class.java]
         settingsManager = SettingsManager(this, viewModel)
         wakeLockManager = WakeLockManager(this)
+        xcTrackLauncher = XCTrackLauncher(this)
 
         // Register the receiver to listen for the broadcast
         val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
@@ -90,7 +92,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Set OnClickListener for the "Launch XCTrack" button
         val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
         launchXCTrackButton.setOnClickListener {
-        launchXCTrack()  // Call your existing method
+            xcTrackLauncher.launchXCTrack()  // Call your existing method
             }
         }
 
@@ -116,23 +118,12 @@ private fun checkAndRequestPermissions() {
     }
 }
 
-private fun initializeApp() {
-    initializeViewModel()
-    settingsManager.loadSettings()
-    initializeSensors()
-    initializeUI()
-    wakeLockManager.acquireWakeLock()
-
-    // Start the foreground service
-    val intent = Intent(this, ShakeDetectionService::class.java)
-    startForegroundService(intent)
-
-    // Set OnClickListener for the "Launch XCTrack" button
-    val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
-    launchXCTrackButton.setOnClickListener {
-        launchXCTrack()  // Call your existing method
+    private fun initializeApp() {
+        settingsManager.loadSettings()
+        initializeSensors()
+        initializeUI()
+        wakeLockManager.acquireWakeLock()
     }
-}
 
 override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -146,7 +137,6 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
         }
     }
 }
-
 
 
 private fun initializeViewModel() {
@@ -293,7 +283,7 @@ private fun initializeViewModel() {
                     if (viewModel.shakeToXCTrackEnabled) {
                         wakeLockManager.wakeUpScreen()
                         bringAppToForeground()
-                        launchXCTrack()
+                        xcTrackLauncher.launchXCTrack()
                     }
                 }
             }
@@ -342,17 +332,5 @@ private fun initializeViewModel() {
             flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
         }
         startActivity(intent)
-    }
-
-    private fun launchXCTrack() {
-        val launchIntent = packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
-        if (launchIntent != null) {
-            startActivity(launchIntent)
-        } else {
-            // XCTrack is not installed, open the Play Store
-            val playStoreIntent = Intent(Intent.ACTION_VIEW)
-            playStoreIntent.data = Uri.parse("market://details?id=org.xcontest.XCTrack")
-            startActivity(playStoreIntent)
-        }
     }
 }
