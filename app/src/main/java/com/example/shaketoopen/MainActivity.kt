@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
-
+    private lateinit var settingsManager: SettingsManager
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
     private lateinit var sensitivitySlider: SeekBar
@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val intent = Intent(this, ShakeDetectionService::class.java)
         startForegroundService(intent)
 
+
         // Set OnClickListener for the "Launch XCTrack" button
         val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
         launchXCTrackButton.setOnClickListener {
@@ -118,7 +119,8 @@ private fun checkAndRequestPermissions() {
 
 private fun initializeApp() {
     initializeViewModel()
-    loadSettings()
+    settingsManager = SettingsManager(this, viewModel)
+    settingsManager.loadSettings()
     initializeSensors()
     initializeUI()
     acquireWakeLock()
@@ -148,25 +150,6 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
 }
 
 
-    private fun saveSettings() {
-        val sharedPreferences = getSharedPreferences("ShakeToOpenSettings", MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putFloat("shakeThreshold", viewModel.shakeThreshold)
-        editor.putLong("shakeTimeWindow", viewModel.shakeTimeWindow)
-        editor.putLong("shakeTimeMax", viewModel.shakeTimeMax)
-        editor.putBoolean("shakeToXCTrackEnabled", viewModel.shakeToXCTrackEnabled)
-        editor.apply()
-    }
-
-
-    private fun loadSettings() {
-        val sharedPreferences = getSharedPreferences("ShakeToOpenSettings", MODE_PRIVATE)
-        viewModel.shakeThreshold = sharedPreferences.getFloat("shakeThreshold", 7.5f)
-        viewModel.shakeTimeWindow = sharedPreferences.getLong("shakeTimeWindow", 500L)
-        viewModel.shakeTimeMax = sharedPreferences.getLong("shakeTimeMax", 2000L)
-        viewModel.shakeToXCTrackEnabled =
-            sharedPreferences.getBoolean("shakeToXCTrackEnabled", true)
-    }
 
 private fun initializeViewModel() {
         viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
@@ -352,7 +335,7 @@ private fun initializeViewModel() {
             wakeLock.release()
         }
         handler.removeCallbacks(releaseWakeLockRunnable)
-        saveSettings()
+        settingsManager.saveSettings()
     }
 
     override fun onDestroy() {
