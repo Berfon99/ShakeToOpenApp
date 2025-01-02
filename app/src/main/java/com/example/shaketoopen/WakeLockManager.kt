@@ -3,6 +3,7 @@ package com.example.shaketoopen
 import android.content.Context
 import android.os.PowerManager
 import android.util.Log
+import android.view.WindowManager
 
 class WakeLockManager(private val context: Context) {
 
@@ -16,7 +17,7 @@ class WakeLockManager(private val context: Context) {
             PowerManager.PARTIAL_WAKE_LOCK,
             "ShakeToOpen::WakeLock"
         )
-        wakeLock?.acquire(10000) // Correction ici : ajout d'un timeout de 10 secondes
+        wakeLock?.acquire(10000) // Timeout of 10 seconds
     }
 
     fun wakeUpScreen() {
