@@ -26,7 +26,7 @@ class ShakeDetectionService : Service(), ViewModelStoreOwner {
     override fun onCreate() {
         super.onCreate()
         Log.d(tag, "onCreate() called")
-        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application)).get(ShakeDetectionViewModel::class.java)
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application)).get(ShakeDetectionViewModel::class.java) // This line is correct!
 
         createNotificationChannel()
         startForegroundService()
@@ -49,7 +49,6 @@ class ShakeDetectionService : Service(), ViewModelStoreOwner {
 
     private fun createNotificationChannel() {
         Log.d(tag, "createNotificationChannel() called")
-        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Removed this line
         val serviceChannel = NotificationChannel(
             CHANNEL_ID,
             "Shake Detection Service Channel",
@@ -57,7 +56,6 @@ class ShakeDetectionService : Service(), ViewModelStoreOwner {
         )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(serviceChannel)
-        // } // Removed this line
     }
 
     private fun startForegroundService() {

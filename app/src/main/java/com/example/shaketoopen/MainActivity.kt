@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    fun toggleShakeToXCTrack(view: View) {
+    fun toggleShakeToXCTrack(unusedView: View) {
         viewModel.shakeToXCTrackEnabled = !viewModel.shakeToXCTrackEnabled
         toggleShakeToXCTrackButton.text = if (viewModel.shakeToXCTrackEnabled) {
             getString(R.string.disable_shake_to_xctrack)
@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun closeApp(view: View) {
+    fun closeApp(unusedView: View) {
         finish()
     }
 
