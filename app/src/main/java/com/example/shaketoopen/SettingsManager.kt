@@ -5,23 +5,25 @@ import android.content.SharedPreferences
 
 class SettingsManager(private val context: Context, private val viewModel: ShakeDetectionViewModel) {
 
-    fun saveSettings() {
-        val sharedPreferences = context.getSharedPreferences("ShakeToOpenSettings", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putFloat("shakeThreshold", viewModel.shakeThreshold)
-        editor.putLong("shakeTimeWindow", viewModel.shakeTimeWindow)
-        editor.putLong("shakeTimeMax", viewModel.shakeTimeMax)
-        editor.putBoolean("shakeToXCTrackEnabled", viewModel.shakeToXCTrackEnabled)
-        editor.apply()
-    }
-
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("ShakeToOpenSettings", Context.MODE_PRIVATE)
 
     fun loadSettings() {
-        val sharedPreferences = context.getSharedPreferences("ShakeToOpenSettings", Context.MODE_PRIVATE)
-        viewModel.shakeThreshold = sharedPreferences.getFloat("shakeThreshold", 7.5f)
-        viewModel.shakeTimeWindow = sharedPreferences.getLong("shakeTimeWindow", 500L)
-        viewModel.shakeTimeMax = sharedPreferences.getLong("shakeTimeMax", 2000L)
-        viewModel.shakeToXCTrackEnabled =
-            sharedPreferences.getBoolean("shakeToXCTrackEnabled", true)
+        viewModel.shakeThreshold = sharedPreferences.getFloat("shakeThreshold", 15f)
+        viewModel.shakeTimeWindow = sharedPreferences.getLong("shakeTimeWindow", 500)
+        viewModel.shakeTimeMax = sharedPreferences.getLong("shakeTimeMax", 1000)
+        viewModel.shakeToXCTrackEnabled = sharedPreferences.getBoolean("shakeToXCTrackEnabled", true)
+        viewModel.detectionEnabled = sharedPreferences.getBoolean("detectionEnabled", true)
+    }
+
+    fun saveSettings() {
+        with(sharedPreferences.edit()) {
+            putFloat("shakeThreshold", viewModel.shakeThreshold)
+            putLong("shakeTimeWindow", viewModel.shakeTimeWindow)
+            putLong("shakeTimeMax", viewModel.shakeTimeMax)
+            putBoolean("shakeToXCTrackEnabled", viewModel.shakeToXCTrackEnabled)
+            putBoolean("detectionEnabled", viewModel.detectionEnabled)
+            apply()
+        }
     }
 }

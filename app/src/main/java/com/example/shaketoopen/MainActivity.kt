@@ -1,47 +1,28 @@
 //MainActivity.kt
 package com.example.shaketoopen
 
-import com.example.shaketoopen.ShakeDetectionService
-import android.Manifest
-import android.app.usage.UsageStatsManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.IntentFilter
 import android.graphics.Color
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import kotlin.math.sqrt
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
 
-class MainActivity : AppCompatActivity(), SensorEventListener {
+class MainActivity : AppCompatActivity() {
 
-    private lateinit var sensorManager: SensorManager
-    private var accelerometer: Sensor? = null
     private lateinit var viewModel: ShakeDetectionViewModel
     private lateinit var settingsManager: SettingsManager
     private lateinit var wakeLockManager: WakeLockManager
     private lateinit var xcTrackLauncher: XCTrackLauncher
     private lateinit var permissionManager: PermissionManager
+    private lateinit var shakeDetector: ShakeDetector
 
     private lateinit var statusText: TextView
     private lateinit var sensitivityValue: TextView
@@ -54,7 +35,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var toggleShakeToXCTrackButton: Button
     private lateinit var closeButton: Button
 
-
     private val xcTrackReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Wake up the screen
@@ -63,61 +43,35 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             xcTrackLauncher.launchXCTrack()
         }
     }
+    private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate() called")
         setContentView(R.layout.activity_main)
 
-        // Initialize managers
+        // Initialize managers (do this first)
         viewModel = ViewModelProvider(this)[ShakeDetectionViewModel::class.java]
         settingsManager = SettingsManager(this, viewModel)
         wakeLockManager = WakeLockManager(this)
         xcTrackLauncher = XCTrackLauncher(this)
         permissionManager = PermissionManager(this)
+        Log.d(TAG, "PermissionManager initialized")
 
-        // Register the receiver to listen for the broadcast
-        val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
-        registerReceiver(xcTrackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-
-        // Check and request location permissions
-        permissionManager.checkAndRequestPermissions {
+        // Check and request location permissions (do this early)
+        permissionManager.checkAndRequestPermissions({
+            Log.d(TAG, "Permissions already granted")
             initializeApp()
-        }
-
-        // Start the foreground service
-        val intent = Intent(this, ShakeDetectionService::class.java)
-        startForegroundService(intent)
-
-
-        // Set OnClickListener for the "Launch XCTrack" button
-        val launchXCTrackButton: Button = findViewById(R.id.launch_xctrack_button)
-        launchXCTrackButton.setOnClickListener {
-            xcTrackLauncher.launchXCTrack()  // Call your existing method
-            }
-        }
+        }, {
+            Log.d(TAG, "Permissions denied")
+            // We don't finish here anymore
+        })
+        Log.d(TAG, "checkAndRequestPermissions() called")
+    }
 
     private fun initializeApp() {
-        settingsManager.loadSettings()
-        initializeSensors()
-        initializeUI()
-        wakeLockManager.acquireWakeLock()
-    }
-
-private fun initializeViewModel() {
-        viewModel = ViewModelProvider(this).get(ShakeDetectionViewModel::class.java)
-    }
-
-    private fun initializeSensors() {
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        if (accelerometer == null) {
-            Toast.makeText(this, "Accelerometer sensor not available", Toast.LENGTH_SHORT).show()
-            return
-        }
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
-    }
-
-    private fun initializeUI() {
+        Log.d(TAG, "initializeApp() called")
+        // Initialize UI elements
         statusText = findViewById(R.id.status_text)
         sensitivityValue = findViewById(R.id.sensitivity_value)
         sensitivitySlider = findViewById(R.id.sensitivity_slider)
@@ -129,6 +83,31 @@ private fun initializeViewModel() {
         toggleShakeToXCTrackButton = findViewById(R.id.toggle_shake_to_xctrack_button)
         closeButton = findViewById(R.id.close_button)
 
+        // Initialize shake detector
+        shakeDetector = ShakeDetector(this, viewModel, statusText, wakeLockManager, xcTrackLauncher)
+
+        // Register the receiver to listen for the broadcast
+        val filter = IntentFilter("com.example.shaketoopen.LAUNCH_XCTRACK")
+        registerReceiver(xcTrackReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+
+        // Start the foreground service
+        val intent = Intent(this, ShakeDetectionService::class.java)
+        startForegroundService(intent)
+
+        // Load settings, initialize sensors, UI, and acquire wake lock
+        settingsManager.loadSettings()
+        shakeDetector.initializeSensors()
+        initializeUI()
+        wakeLockManager.acquireWakeLock()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun initializeUI() {
+        Log.d(TAG, "initializeUI() called")
         // Set default values in UI
         timeValue.text = getString(
             R.string.time_delay,
@@ -150,15 +129,17 @@ private fun initializeViewModel() {
         closeButton.setOnClickListener {
             closeApp(it)
         }
+        launchXCTrackButton.setOnClickListener {
+            xcTrackLauncher.launchXCTrack()
+        }
         sensitivitySlider.progress = ((30f - viewModel.shakeThreshold) / 3.75f).toInt()
         sensitivityValue.text =
             getString(R.string.sensitivity_level, sensitivitySlider.progress + 1)
         timeSlider.progress = ((viewModel.shakeTimeWindow - 200) / 100).toInt()
         timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
     }
-
-
     private fun setupSliders() {
+        Log.d(TAG, "setupSliders() called")
         sensitivitySlider.max = 4
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -187,7 +168,7 @@ private fun initializeViewModel() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        timeMaxSlider.max = 5
+        timeMaxSlider.max = 4
         timeMaxSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 viewModel.shakeTimeMax = (500 + progress * 500).toLong()
@@ -206,76 +187,6 @@ private fun initializeViewModel() {
         })
     }
 
-    private fun updateStatusText() {
-        statusText.text = getString(R.string.detection_in_progress)
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (!viewModel.detectionEnabled) return
-
-        event?.let {
-            val x = it.values[0]
-            val y = it.values[1]
-            val z = it.values[2]
-
-            val currentTime = System.currentTimeMillis()
-            val magnitude = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-
-            if (magnitude > viewModel.shakeThreshold) {
-                handleShake(currentTime)
-            } else if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeMax) {
-                resetShakeDetection()
-            }
-            viewModel.lastTime = currentTime
-        }
-    }
-
-    private fun handleShake(currentTime: Long) {
-        when (viewModel.shakeCount) {
-            0 -> {
-                viewModel.shakeCount = 1
-                statusText.setBackgroundColor(Color.parseColor("#FFA500"))
-                statusText.text = getString(R.string.one_shake_detected)
-                viewModel.firstShakeTime = currentTime
-            }
-            1 -> {
-                if (currentTime - viewModel.firstShakeTime > viewModel.shakeTimeWindow && currentTime - viewModel.firstShakeTime < viewModel.shakeTimeMax) {
-                    viewModel.shakeCount = 2
-                    statusText.setBackgroundColor(Color.GREEN)
-                    viewModel.goCircleGreen = true
-                    statusText.text = getString(R.string.two_shakes_detected)
-                    if (viewModel.shakeToXCTrackEnabled) {
-                        wakeLockManager.wakeUpScreen()
-                        bringAppToForeground()
-                        xcTrackLauncher.launchXCTrack()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun resetShakeDetection() {
-        viewModel.shakeCount = 0
-        statusText.setBackgroundColor(Color.RED)
-        viewModel.goCircleGreen = false
-        statusText.text = getString(R.string.status_waiting)
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-    override fun onPause() {
-        super.onPause()
-        wakeLockManager.releaseWakeLock()
-        settingsManager.saveSettings()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        sensorManager.unregisterListener(this)
-        // Unregister the receiver when the activity is destroyed
-        unregisterReceiver(xcTrackReceiver)
-    }
-
     fun toggleShakeToXCTrack(view: View) {
         viewModel.shakeToXCTrackEnabled = !viewModel.shakeToXCTrackEnabled
         toggleShakeToXCTrackButton.text = if (viewModel.shakeToXCTrackEnabled) {
@@ -289,12 +200,15 @@ private fun initializeViewModel() {
         finish()
     }
 
+    override fun onPause() {
+        super.onPause()
+        wakeLockManager.releaseWakeLock()
+        settingsManager.saveSettings()
+    }
 
-
-    private fun bringAppToForeground() {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        startActivity(intent)
+    override fun onDestroy() {
+        super.onDestroy()
+        shakeDetector.unregisterListener()
+        unregisterReceiver(xcTrackReceiver)
     }
 }

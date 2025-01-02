@@ -3,11 +3,14 @@ package com.example.shaketoopen
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 
 class XCTrackLauncher(private val context: Context) {
 
+    private val TAG = "XCTrackLauncher"
 
     fun launchXCTrack() {
+        Log.d(TAG, "launchXCTrack() called")
         val launchIntent = context.packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
         if (launchIntent != null) {
             context.startActivity(launchIntent)

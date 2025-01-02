@@ -1,53 +1,51 @@
 package com.example.shaketoopen
 
 import android.Manifest
-import android.content.Context
+import android.app.Activity
 import android.content.pm.PackageManager
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-class PermissionManager(private val activity: AppCompatActivity) {
+class PermissionManager(private val activity: Activity) {
 
+    private val LOCATION_PERMISSION_REQUEST_CODE = 100
+    private val TAG = "PermissionManager"
 
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-    }
-
-    private var permissionsGrantedCallback: (() -> Unit)? = null
-
-    fun checkAndRequestPermissions(onPermissionsGranted: () -> Unit) {
-        permissionsGrantedCallback = onPermissionsGranted
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                ),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
-        } else {
+    fun checkAndRequestPermissions(onPermissionsGranted: () -> Unit, onPermissionsDenied: () -> Unit) {
+        Log.d(TAG, "checkAndRequestPermissions() called")
+        if (checkPermissions()) {
             onPermissionsGranted()
+        } else {
+            requestPermissions()
         }
     }
 
+    private fun checkPermissions(): Boolean {
+        Log.d(TAG, "checkPermissions() called")
+        val locationPermission = ContextCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        return locationPermission == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions() {
+        Log.d(TAG, "requestPermissions() called")
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            LOCATION_PERMISSION_REQUEST_CODE
+        )
+    }
+
     fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.d(TAG, "onRequestPermissionsResult() called")
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permissionsGrantedCallback?.invoke()
+                Log.d(TAG, "Permissions granted")
             } else {
-                // Handle the case where permissions are denied
-                Toast.makeText(activity, "Location permissions are required to use this app", Toast.LENGTH_LONG).show()
-                activity.finish()
+                Log.d(TAG, "Permissions denied")
             }
         }
     }
