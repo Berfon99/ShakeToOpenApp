@@ -43,11 +43,11 @@ class MainActivity : AppCompatActivity() {
             xcTrackLauncher.launchXCTrack()
         }
     }
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate() called")
+        Log.d(tag, "onCreate() called")
         setContentView(R.layout.activity_main)
 
         // Initialize managers (do this first)
@@ -56,21 +56,21 @@ class MainActivity : AppCompatActivity() {
         wakeLockManager = WakeLockManager(this)
         xcTrackLauncher = XCTrackLauncher(this)
         permissionManager = PermissionManager(this)
-        Log.d(TAG, "PermissionManager initialized")
+        Log.d(tag, "PermissionManager initialized")
 
         // Check and request location permissions (do this early)
         permissionManager.checkAndRequestPermissions({
-            Log.d(TAG, "Permissions already granted")
+            Log.d(tag, "Permissions already granted or just granted")
             initializeApp()
         }, {
-            Log.d(TAG, "Permissions denied")
+            Log.d(tag, "Permissions denied")
             // We don't finish here anymore
         })
-        Log.d(TAG, "checkAndRequestPermissions() called")
+        Log.d(tag, "checkAndRequestPermissions() called")
     }
 
     private fun initializeApp() {
-        Log.d(TAG, "initializeApp() called")
+        Log.d(tag, "initializeApp() called")
         // Initialize UI elements
         statusText = findViewById(R.id.status_text)
         sensitivityValue = findViewById(R.id.sensitivity_value)
@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeUI() {
-        Log.d(TAG, "initializeUI() called")
+        Log.d(tag, "initializeUI() called")
         // Set default values in UI
         timeValue.text = getString(
             R.string.time_delay,
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
     }
     private fun setupSliders() {
-        Log.d(TAG, "setupSliders() called")
+        Log.d(tag, "setupSliders() called")
         sensitivitySlider.max = 4
         sensitivitySlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

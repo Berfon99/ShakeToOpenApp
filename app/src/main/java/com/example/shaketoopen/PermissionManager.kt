@@ -11,9 +11,11 @@ class PermissionManager(private val activity: Activity) {
 
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
     private val TAG = "PermissionManager"
+    private var onPermissionsGrantedCallback: (() -> Unit)? = null
 
     fun checkAndRequestPermissions(onPermissionsGranted: () -> Unit, onPermissionsDenied: () -> Unit) {
         Log.d(TAG, "checkAndRequestPermissions() called")
+        onPermissionsGrantedCallback = onPermissionsGranted
         if (checkPermissions()) {
             onPermissionsGranted()
         } else {
@@ -44,6 +46,7 @@ class PermissionManager(private val activity: Activity) {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Permissions granted")
+                onPermissionsGrantedCallback?.invoke()
             } else {
                 Log.d(TAG, "Permissions denied")
             }
