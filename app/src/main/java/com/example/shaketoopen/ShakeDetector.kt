@@ -21,20 +21,20 @@ class ShakeDetector(
     private val sensorManager: SensorManager =
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private var accelerometer: Sensor? = null
-    private val TAG = "ShakeDetector"
+    private val tag = "ShakeDetector"
 
     fun initializeSensors() {
-        Log.d(TAG, "initializeSensors() called")
+        Log.d(tag, "initializeSensors() called")
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         if (accelerometer == null) {
-            Log.e(TAG, "Accelerometer sensor not available")
+            Log.e(tag, "Accelerometer sensor not available")
             return
         }
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        Log.d(TAG, "onSensorChanged() called")
+        Log.d(tag, "onSensorChanged() called")
         if (!viewModel.detectionEnabled) return
 
         event?.let {
@@ -55,7 +55,7 @@ class ShakeDetector(
     }
 
     private fun handleShake(currentTime: Long) {
-        Log.d(TAG, "handleShake() called")
+        Log.d(tag, "handleShake() called")
         when (viewModel.shakeCount) {
             0 -> {
                 viewModel.shakeCount = 1
@@ -80,7 +80,7 @@ class ShakeDetector(
     }
 
     private fun resetShakeDetection() {
-        Log.d(TAG, "resetShakeDetection() called")
+        Log.d(tag, "resetShakeDetection() called")
         viewModel.shakeCount = 0
         statusText.setBackgroundColor(Color.RED)
         viewModel.goCircleGreen = false
@@ -88,11 +88,11 @@ class ShakeDetector(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d(TAG, "onAccuracyChanged() called")
+        Log.d(tag, "onAccuracyChanged() called")
     }
 
     fun unregisterListener() {
-        Log.d(TAG, "unregisterListener() called")
+        Log.d(tag, "unregisterListener() called")
         sensorManager.unregisterListener(this)
     }
 }

@@ -3,7 +3,7 @@ package com.example.shaketoopen
 import android.content.Context
 import android.content.SharedPreferences
 
-class SettingsManager(private val context: Context, private val viewModel: ShakeDetectionViewModel) {
+class SettingsManager(context: Context, private val viewModel: ShakeDetectionViewModel) { // Correction ici : suppression de private val devant context
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("ShakeToOpenSettings", Context.MODE_PRIVATE)

@@ -7,20 +7,20 @@ import android.util.Log
 class WakeLockManager(private val context: Context) {
 
     private var wakeLock: PowerManager.WakeLock? = null
-    private val TAG = "WakeLockManager"
+    private val tag = "WakeLockManager"
 
     fun acquireWakeLock() {
-        Log.d(TAG, "acquireWakeLock() called")
+        Log.d(tag, "acquireWakeLock() called")
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
             "ShakeToOpen::WakeLock"
         )
-        wakeLock?.acquire()
+        wakeLock?.acquire(10000) // Correction ici : ajout d'un timeout de 10 secondes
     }
 
     fun wakeUpScreen() {
-        Log.d(TAG, "wakeUpScreen() called")
+        Log.d(tag, "wakeUpScreen() called")
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = powerManager.newWakeLock(
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
@@ -30,7 +30,7 @@ class WakeLockManager(private val context: Context) {
     }
 
     fun releaseWakeLock() {
-        Log.d(TAG, "releaseWakeLock() called")
+        Log.d(tag, "releaseWakeLock() called")
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }

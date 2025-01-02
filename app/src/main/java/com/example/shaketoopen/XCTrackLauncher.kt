@@ -7,10 +7,10 @@ import android.util.Log
 
 class XCTrackLauncher(private val context: Context) {
 
-    private val TAG = "XCTrackLauncher"
+    private val tag = "XCTrackLauncher"
 
     fun launchXCTrack() {
-        Log.d(TAG, "launchXCTrack() called")
+        Log.d(tag, "launchXCTrack() called")
         val launchIntent = context.packageManager.getLaunchIntentForPackage("org.xcontest.XCTrack")
         if (launchIntent != null) {
             context.startActivity(launchIntent)
