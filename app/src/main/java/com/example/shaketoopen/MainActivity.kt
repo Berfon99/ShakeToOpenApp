@@ -1,4 +1,3 @@
-//MainActivity.kt
 package com.example.shaketoopen
 
 import android.content.BroadcastReceiver
@@ -59,13 +58,10 @@ class MainActivity : AppCompatActivity() {
         Log.d(tag, "PermissionManager initialized")
 
         // Check and request location permissions (do this early)
-        permissionManager.checkAndRequestPermissions({
+        permissionManager.checkAndRequestPermissions {
             Log.d(tag, "Permissions already granted or just granted")
             initializeApp()
-        }, {
-            Log.d(tag, "Permissions denied")
-            // We don't finish here anymore
-        })
+        }
         Log.d(tag, "checkAndRequestPermissions() called")
     }
 
@@ -103,9 +99,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionManager.onRequestPermissionsResult(requestCode, grantResults)
     }
-
     private fun initializeUI() {
         Log.d(tag, "initializeUI() called")
         // Set default values in UI
@@ -138,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         timeSlider.progress = ((viewModel.shakeTimeWindow - 200) / 100).toInt()
         timeMaxSlider.progress = ((viewModel.shakeTimeMax - 500) / 500).toInt()
     }
+
     private fun setupSliders() {
         Log.d(tag, "setupSliders() called")
         sensitivitySlider.max = 4
