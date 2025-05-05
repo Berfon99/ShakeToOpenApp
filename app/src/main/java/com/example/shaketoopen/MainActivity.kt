@@ -13,6 +13,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import android.os.PowerManager
+import android.content.Context.POWER_SERVICE
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,12 +59,48 @@ class MainActivity : AppCompatActivity() {
         permissionManager = PermissionManager(this)
         Log.d(tag, "PermissionManager initialized")
 
+        // Request ignore battery optimizations
+        requestIgnoreBatteryOptimization()
+
         // Check and request location permissions (do this early)
         permissionManager.checkAndRequestPermissions {
             Log.d(tag, "Permissions already granted or just granted")
             initializeApp()
         }
         Log.d(tag, "checkAndRequestPermissions() called")
+    }
+
+    // Add this new method
+    private fun requestIgnoreBatteryOptimization() {
+        try {
+            val packageName = packageName
+            val pm = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent()
+                intent.action = android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = android.net.Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error requesting battery optimization exception", e)
+        }
+    }
+
+    // Make sure service is started in onResume
+    override fun onResume() {
+        super.onResume()
+        // Ensure service is running
+        val serviceIntent = Intent(this, ShakeDetectionService::class.java)
+        startForegroundService(serviceIntent)
+        Log.d(tag, "onResume() - started/refreshed foreground service")
+    }
+
+    // Make sure service stays running when activity is stopped
+    override fun onStop() {
+        super.onStop()
+        // Update settings
+        settingsManager.saveSettings()
+        Log.d(tag, "onStop() - saved settings, service continues running")
     }
 
     private fun initializeApp() {
@@ -101,6 +139,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionManager.onRequestPermissionsResult(requestCode, grantResults)
     }
+
     private fun initializeUI() {
         Log.d(tag, "initializeUI() called")
         // Set default values in UI
